@@ -38,7 +38,7 @@ pip install -r requirements.txt
 
 ## 使用 pytest 运行测试
 
-仓库已包含 `pytest.ini`，主要配置项包括：addopts（默认生成 HTML 报告、并行执行 -n 7）、testpaths（默认扫描 ./api-test/test_cases 和 ./ui-test/test_cases，本仓库以实际目录为准）。
+仓库已包含 `pytest.ini`，主要配置项包括：addopts（默认生成 HTML 报告、并行执行 -n 7）、testpaths（默认扫描 ./api-test 和 ./ui-test，本仓库以实际目录为准）。
 
 在仓库根目录运行：
 
@@ -54,7 +54,7 @@ pytest api_test/test_example.py
 
 ## 关于 run.py
 
-仓库包含一个示例脚本 `run.py`，其逻辑会向 `http://192.168.198.129:81` 发起请求并尝试多次带验证码的登录。该脚本仅作演示使用：
+仓库包含一个示例脚本 `run.py`，其逻辑会向 `http://192.168.198.133:81` 发起请求并尝试多次带验证码的登录。该脚本仅作演示使用：
 
 - 请不要在公网或非测试环境运行。
 - 若用于调试，请先确认目标环境允许此类请求并使用合适的账户信息。
