@@ -1,6 +1,6 @@
 # gouguoa-auto-test
 
-这是 gouguoa 的自动化测试仓库，使用 Python + pytest 作为主要测试框架，目标是构建稳定、可维护的接口与 UI 自动化测试套件。下面的说明已结合仓库现状编写。
+这是 gouguoa 的自动化测试仓库，使用 Python + pytest 作为主要测试框架，目标是构建稳定、可维护的接口与 UI 自动化测试套件。
 
 > 注意：请勿在仓库中提交明文凭据或敏感信息，推荐使用环境变量或 CI Secrets 管理密钥与密码。
 
@@ -21,7 +21,7 @@ gouguoa-auto-test/
 ├── conftest.py            # pytest 全局夹具 (Fixture)
 ├── pytest.ini             # pytest 配置文件
 ├── run.py                 # 启动与执行入口脚本
-├──requirements.txt        # 项目环境需求
+├── requirements.txt       # 项目环境需求
 └── README.md              # 项目说明文档
 ```
 ## 依赖与运行环境
@@ -35,11 +35,10 @@ python -m venv .venv
 source .venv/bin/activate
 # Windows (PowerShell)
 .\.venv\Scripts\Activate.ps1
-# 安装依赖（若有 requirements.txt）
+# 安装依赖（requirements.txt）
 pip install -r requirements.txt
 ```
 
-如果你还没有 requirements.txt，请将项目依赖写入该文件以便在 CI 中统一安装。
 
 ## 使用 pytest 运行测试
 
