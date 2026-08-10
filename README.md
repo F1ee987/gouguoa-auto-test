@@ -21,6 +21,7 @@ gouguoa-auto-test/
 ├── conftest.py            # pytest 全局夹具 (Fixture)
 ├── pytest.ini             # pytest 配置文件
 ├── run.py                 # 启动与执行入口脚本
+├──requirements.txt        # 项目环境需求
 └── README.md              # 项目说明文档
 ```
 ## 依赖与运行环境
