@@ -5,20 +5,24 @@
 > 注意：请勿在仓库中提交明文凭据或敏感信息，推荐使用环境变量或 CI Secrets 管理密钥与密码。
 
 ## 项目结构（当前）
-
-![项目结构_v2.svg](项目结构_v2.svg)
-```
-├── api_test/               # 接口测试目录（请在此添加你的测试用例）
-├── ui_test/                # UI 测试目录（请在此添加你的测试用例）
-├── reports/                # 测试报告输出目录（pytest.ini 中配置为 ./reports/report.html）
-├── conftest.py             # pytest 全局夹具（当前包含运行计时 fixture）
-├── pytest.ini              # pytest 配置（addopts、testpaths、markers）
-├── run.py                  # 示例脚本（用于演示登录/验证码尝试，请谨慎使用）
-├── img.png                 # 项目图片示例
-├── 项目结构.png            # 原项目结构图片（保留）
-└── README.md               # 本文件
-```
-
+"""
+gouguoa-auto-test/
+├── api_test/              # 接口测试模块
+│   ├── test_cases/        # 接口测试用例（pytest脚本）
+│   ├── data/              # 测试数据（多角色账号、审批参数CSV）
+│   └── apifox-export/     # Apifox导出的接口集合（新手可选，不用写代码）
+├── ui_test/               # UI自动化模块
+│   ├── pages/             # 页面对象封装（登录页、审批页、权限页）
+│   ├── test_cases/        # UI测试用例
+│   └── utils/             # 工具类（浏览器驱动管理、数据库操作、截图工具）
+├── config/                # 配置文件（环境地址、数据库连接信息，避免硬编码）
+├── reports/               # 测试报告（Allure/pytest-html生成的HTML报告）
+├── docs/                  # 项目文档（测试方案、缺陷报告、用例设计思路）
+├── conftest.py            # pytest 全局夹具 (Fixture)
+├── pytest.ini             # pytest 配置文件
+├── run.py                 # 启动与执行入口脚本
+└── README.md              # 项目说明文档
+"""
 ## 依赖与运行环境
 
 - 推荐使用 Python 3.8+（或与项目中指定版本一致）。
