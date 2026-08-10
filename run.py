@@ -19,7 +19,7 @@ for answer in possible_values:
         'password': '123456',
         'captcha': str(answer)
     }
-    session.get(f"http://192.168.198.129:81/captcha.html?t={int(time()*1000)}")
+    session.get(f"http://192.168.198.133:81/captcha.html?t={int(time()*1000)}")
     res = session.post(url="http://192.168.198.129:81/home/login/login_submit", data=login_data)
     print(res.json())
     if "验证码不正确" in res.json().get('msg'):
