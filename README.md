@@ -5,7 +5,7 @@
 > 注意：请勿在仓库中提交明文凭据或敏感信息，推荐使用环境变量或 CI Secrets 管理密钥与密码。
 
 ## 项目结构（当前）
-'''
+'''text
 gouguoa-auto-test/
 ├── api_test/              # 接口测试模块
 │   ├── test_cases/        # 接口测试用例（pytest脚本）
