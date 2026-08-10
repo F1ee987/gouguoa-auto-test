@@ -1,12 +1,12 @@
 # gouguoa-auto-test
 
-这是 gouguoa 的自动化测试仓库，使用 Python + pytest 作为主要测试框架，目标是构建稳定、可维护的接口与 UI 自动化测试套件。下面的说明已结合仓库当前文件与目录（pytest.ini、conftest.py、run.py、api_test、ui_test、reports 等）进行调整，帮助你快速上手和在 CI 中运行测试。
+这是 gouguoa 的自动化测试仓库，使用 Python + pytest 作为主要测试框架，目标是构建稳定、可维护的接口与 UI 自动化测试套件。下面的说明已结合仓库现状编写。
 
 > 注意：请勿在仓库中提交明文凭据或敏感信息，推荐使用环境变量或 CI Secrets 管理密钥与密码。
 
 ## 项目结构（当前）
 
-![img_1.png](项目结构.png)
+![项目结构_v2.svg](项目结构_v2.svg)
 ```
 ├── api_test/               # 接口测试目录（请在此添加你的测试用例）
 ├── ui_test/                # UI 测试目录（请在此添加你的测试用例）
@@ -15,6 +15,7 @@
 ├── pytest.ini              # pytest 配置（addopts、testpaths、markers）
 ├── run.py                  # 示例脚本（用于演示登录/验证码尝试，请谨慎使用）
 ├── img.png                 # 项目图片示例
+├── 项目结构.png            # 原项目结构图片（保留）
 └── README.md               # 本文件
 ```
 
@@ -37,7 +38,7 @@ pip install -r requirements.txt
 
 ## 使用 pytest 运行测试
 
-仓库已包含 `pytest.ini`，主要配置项包括：addopts（默认生成 HTML 报告、并行执行 -n 7）、testpaths（默认扫描 ./api-test/test_cases 和 ./ui-test/test_cases，本仓库实际目录为 `api_test` 与 `ui_test`，如需修改请调整 pytest.ini），以及自定义 markers（smoke、regression、ui、api）。
+仓库已包含 `pytest.ini`，主要配置项包括：addopts（默认生成 HTML 报告、并行执行 -n 7）、testpaths（默认扫描 ./api-test/test_cases 和 ./ui-test/test_cases，本仓库以实际目录为准）。
 
 在仓库根目录运行：
 
