@@ -1,3 +1,11 @@
+"""
+@Project:gouguoa-auto-test
+@File   :db_utils.py
+@IDE    :PyCharm
+@Author :zhousha
+@Date   :2026/7/23 14:10
+"""
+
 import pymysql
 from pymysql.connections import Connection
 from typing import Optional, Any
