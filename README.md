@@ -22,7 +22,7 @@ gouguoa-auto-test/
 ├── pytest.ini             # pytest 配置文件
 ├── run.py                 # 启动与执行入口脚本
 └── README.md              # 项目说明文档
-
+```
 ## 依赖与运行环境
 
 - 推荐使用 Python 3.8+（或与项目中指定版本一致）。
