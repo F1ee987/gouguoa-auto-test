@@ -1,4 +1,5 @@
 import ddddocr
+import string
 
 def ocr_captcha_image(img_path: str) -> str:
     """orc识别验证码"""
