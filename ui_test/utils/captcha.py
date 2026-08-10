@@ -17,8 +17,8 @@ def calc_captcha(captcha_text: str):
             print(c)
             break
         is_num += 1
-    num1, num2 = int(captcha_text[:is_num]), int(captcha_text[is_num:])
-    print(num1,num2)
+    num1, num2 = int(captcha_text[:is_num]), int(captcha_text[is_num+1:])
+    return num1 + num2
 
 if __name__ == '__main__':
     ocr_captcha_image('img_1.png')
