@@ -1,74 +1,66 @@
 # gouguoa-auto-test
 
-自动化测试仓库模板（gouguoa-auto-test）。
+这是 gouguoa 的自动化测试仓库，使用 Python + pytest 作为主要测试框架，目标是构建稳定、可维护的接口与 UI 自动化测试套件。下面的说明已结合仓库当前文件与目录（pytest.ini、conftest.py、run.py、api_test、ui_test、reports 等）进行调整，帮助你快速上手和在 CI 中运行测试。
 
-> 说明：本 README 为通用模板，已包含项目简介、安装、运行、配置、目录结构、贡献说明等常用部分。根据仓库实际技术栈（例如 Python/JavaScript/Java 等）和工具（pytest/Mocha/JUnit 等）替换或补充具体命令与示例。
+> 注意：请勿在仓库中提交明文凭据或敏感信息，推荐使用环境变量或 CI Secrets 管理密钥与密码。
 
-## 项目简介
+## 项目结构（当前）
 
-这是 gouguoa 的自动化测试项目，旨在构建稳定、可维护的自动化测试套件，用于接口/端到端/回归等测试场景。仓库包含测试用例、测试配置、执行脚本以及 CI 集成示例。
+```
+├── api_test/               # 接口测试目录（请在此添加你的测试用例）
+├── ui_test/                # UI 测试目录（请在此添加你的测试用例）
+├── reports/                # 测试报告输出目录（pytest.ini 中配置为 ./reports/report.html）
+├── conftest.py             # pytest 全局夹具（当前包含运行计时 fixture）
+├── pytest.ini              # pytest 配置（addopts、testpaths、markers）
+├── run.py                  # 示例脚本（用于演示登录/验证码尝试，请谨慎使用）
+├── img.png                 # 项目图片示例
+└── README.md               # 本文件
+```
 
-## 主要功能
+## 依赖与运行环境
 
-- 用例管理与组织
-- 本地与 CI 环境的一键执行
-- 支持测试报告输出与日志收集
-- 可扩展的测试数据与环境配置
-
-## 环境与依赖
-
-说明仓库使用的语言与测试框架（示例）：
-
-- Python + pytest
-- Node.js + Mocha
-- Java + JUnit
-
-请在此处填写你项目使用的语言与依赖，并提供安装示例：
-
-示例（Python/pytest）：
+- 推荐使用 Python 3.8+（或与项目中指定版本一致）。
+- 建议使用虚拟环境管理依赖：
 
 ```bash
-# 建议使用虚拟环境
 python -m venv .venv
-source .venv/bin/activate  # macOS / Linux
-.\.venv\Scripts\activate   # Windows
+# macOS / Linux
+source .venv/bin/activate
+# Windows (PowerShell)
+.\.venv\Scripts\Activate.ps1
+# 安装依赖（若有 requirements.txt）
 pip install -r requirements.txt
 ```
 
-示例（Node.js）：
+如果你还没有 requirements.txt，请将项目依赖写入该文件以便在 CI 中统一安装。
+
+## 使用 pytest 运行测试
+
+仓库已包含 `pytest.ini`，主要配置项包括：addopts（默认生成 HTML 报告、并行执行 -n 7）、testpaths（默认扫描 ./api-test/test_cases 和 ./ui-test/test_cases，本仓库实际目录为 `api_test` 与 `ui_test`，如需修改请调整 pytest.ini），以及自定义 markers（smoke、regression、ui、api）。
+
+在仓库根目录运行：
 
 ```bash
-npm install
+# 运行全部测试（会使用 pytest.ini 中的 addopts）
+pytest
+
+# 或运行单个测试文件
+pytest api_test/test_example.py
 ```
 
-## 快速开始
+生成的报告默认输出到 `./reports/report.html`（由 pytest.ini 的 --html 参数控制）。
 
-下面给出一个通用的快速启动示例，请根据实际技术栈替换命令：
+## 关于 run.py
 
-运行全部测试（示例）：
+仓库包含一个示例脚本 `run.py`，其逻辑会向 `http://192.168.198.129:81` 发起请求并尝试多次带验证码的登录。该脚本仅作演示使用：
 
-```bash
-# Python/pytest 示例
-pytest -q --maxfail=1
+- 请不要在公网或非测试环境运行。
+- 若用于调试，请先确认目标环境允许此类请求并使用合适的账户信息。
 
-# Node.js 示例
-npm test
-```
+## 配置与敏感信息管理
 
-运行单个用例或目录：
-
-```bash
-pytest tests/test_example.py
-# 或
-npm test -- tests/example.test.js
-```
-
-## 配置
-
-将敏感信息或环境相关配置通过环境变量或配置文件管理。示例：
-
-- .env 或 config.yml 存放测试环境地址、账号、密码等（注意不要把敏感信息提交到仓库）
-- CI 中使用 Secret 管理凭证
+- 推荐使用 `.env` 或专门的配置文件（例如 config.yml）保存环境相关配置，并把敏感信息加入 `.gitignore`。
+- 在 CI（例如 GitHub Actions）中使用 Secrets 管理凭证。
 
 示例环境变量：
 
@@ -77,44 +69,9 @@ export TEST_ENV=staging
 export API_KEY=xxxxxx
 ```
 
-## 测试报告与日志
+## CI 集成（示例：GitHub Actions）
 
-推荐生成测试报告并保留执行日志，常见方式：
-
-- pytest-html、Allure 报告（Python）
-- mochawesome（Node.js）
-
-示例（生成 HTML 报告）：
-
-```bash
-pytest --html=report.html
-```
-
-## 目录结构（示例）
-
-```
-├── tests/                # 测试用例目录
-│   ├── test_login.py
-│   └── test_api.py
-├── fixtures/             # 测试夹具 / 测试数据
-├── reports/              # 测试报告输出
-├── requirements.txt      # Python 依赖
-├── package.json          # Node.js 项目配置（如果适用）
-└── README.md
-```
-
-根据你的仓库实际结构调整上述示例。
-
-## CI 集成
-
-建议在 CI 中加入以下步骤：
-
-1. 安装依赖
-2. 配置环境变量/Secrets
-3. 运行测试并收集报告
-4. 上传或保存测试报告为构建产物
-
-示例（GitHub Actions 简单示例，需按语言替换）：
+下面是一个简单的 GitHub Actions 流程示例（按需修改 Python 版本和安装命令）：
 
 ```yaml
 name: CI
@@ -135,34 +92,31 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Run tests
-        run: pytest --junitxml=results.xml
+        run: pytest
       - name: Upload report
         uses: actions/upload-artifact@v4
         with:
           name: test-report
-          path: results.xml
+          path: reports/report.html
 ```
 
-## 贡献指南
+## 报告与日志
 
-欢迎贡献！请遵循以下流程：
+推荐使用 Allure、pytest-html 等工具生成更丰富的测试报告，并将 reports 目录作为构建产物上传保留执行记录。
+
+## 贡献
+
+欢迎贡献代码、测试用例与用例模板：
 
 1. Fork 本仓库
 2. 新建分支：git checkout -b feature/xxx
-3. 提交并推送：git commit -m "feat: 添加..." && git push
-4. 发起 Pull Request
-
-请在 PR 中说明变更目的、测试方式以及是否需要兼容性注意事项。
-
-## 常见问题
-
-- 如果遇到依赖安装失败，确认使用的 Python/Node 版本与 requirements/package.json 中声明的一致。
-- 测试用例间存在依赖时，优先抽取公共夹具进行复用，保持用例独立性。
+3. 提交并推送：git commit -m "feat: 描述你的改动" && git push
+4. 发起 Pull Request，说明变更目的与验证方式
 
 ## 许可证
 
-请在此处补充许可证信息，例如 MIT、Apache-2.0 等。
+该仓库当前未指定具体开源协议。若需要公开发布，请添加 LICENSE 文件（例如 MIT、Apache-2.0 等）。
 
 ## 联系方式
 
-如有问题请联系仓库维护者：@F1ee987
+如有问题请联系维护者：@F1ee987
