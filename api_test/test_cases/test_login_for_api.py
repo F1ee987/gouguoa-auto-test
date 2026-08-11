@@ -24,12 +24,15 @@ def prepare_account():
         pytest.skip("未读取到测试账号")
 
     test_data = []
-    for i in range(1, 8):
-        test_account = accounts[i]
+    for account in accounts[1:]:
+        test_account = account
         username = test_account[1]
         password = test_account[2]
         print(f"🚀 加载测试账号: {username}")
         test_data.append((username, password))
+
+    if not test_data:
+        pytest.skip("没有有效的测试账号")
 
     return test_data
 
