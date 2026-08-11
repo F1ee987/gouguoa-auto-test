@@ -7,8 +7,10 @@
 """
 import pytest
 import requests
+import time
 from config.conf import BASE_URL, LOGIN_URL, ADD_ACCOUNT_URL
 from ui_test.utils.reader import Reader
+from ui_test.utils.captcha import calc_captcha, ocr_captcha_image
 
 def get_test_accounts():
     """读取accounts.csv文件返回测试账号数据"""
@@ -36,7 +38,6 @@ def try_brute_force_captcha(username, password):
     from requests.adapters import HTTPAdapter
     from urllib3.util.retry import Retry
     import random
-    import time
 
     # ---------- 1. 配置 Session（含重试和连接池） ----------
     session = requests.Session()
@@ -135,3 +136,17 @@ def test_login_with_brute_force(username, password):
 #     """"添加用户接口"""
 #     res = requests.post(ADD_ACCOUNT_URL, data={})
 #     print(res.text)
+
+@pytest.mark.parametrize("username,password", prepare_account())
+def test_by_orc_captcha(username, password):
+    """OCR 解码验证码"""
+    session = requests.Session()
+    captcha_res = session.get(f"{BASE_URL}/captcha.html?t={int(time.time()*1000)}", timeout=5)
+    captcha_img = f"../data/captcha_{username}.png"
+    with open(captcha_img, 'wb') as f:
+        f.write(captcha_res.content)
+    captcha_text = ocr_captcha_image(captcha_img)
+    captcha_num = calc_captcha(captcha_text)
+    print(f"OCR 解码验证码: {captcha_text}, 解码结果: {captcha_num}")
+
+
