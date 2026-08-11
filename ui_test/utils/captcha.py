@@ -18,18 +18,18 @@ def ocr_captcha_image(img_path: str) -> str:
     return captcha_text
 
 def calc_captcha(captcha_text: str) -> int:
-    """根据识别的算式计算结果 v1版本"""
+    """根据识别的算式计算结果 v2版本"""
     from re import sub
-    is_num = 0
-    cleaned = sub(r'\s+', '',captcha_text)
+    first_num_len = 0
+    text = captcha_text.replace('>', '7')
+    cleaned = sub(r'\s+', '',text)
     for c in cleaned:
         if c not in string.digits:
             break
-        is_num += 1
-    num1, num2 = int(cleaned[:is_num]), int(cleaned[is_num+1:])
+        first_num_len += 1
+    num1, num2 = int(cleaned[:first_num_len]), int(cleaned[first_num_len+1:])
     return num1 + num2
 
 if __name__ == '__main__':
     r = ocr_captcha_image('img.png')
-    s = "30 + 4"
-    print(r)
+    print(calc_captcha(r))
