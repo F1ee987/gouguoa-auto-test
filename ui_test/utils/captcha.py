@@ -21,7 +21,7 @@ def calc_captcha(captcha_text: str) -> int:
     """根据识别的算式计算结果 v2版本"""
     from re import sub
     first_num_len = 0
-    text = captcha_text.replace('>', '7')
+    text = captcha_text.replace('>', '7').replace('q', '9')
     cleaned = sub(r'\s+', '',text)
     for c in cleaned:
         if c not in string.digits:
