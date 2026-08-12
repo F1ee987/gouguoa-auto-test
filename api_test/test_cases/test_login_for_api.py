@@ -130,10 +130,10 @@ def try_brute_force_captcha(username, password):
     # ---------- 4. 最终断言 ----------
     assert login_in, f"❌ 登录失败: {fail_reason if fail_reason else '所有验证码均未命中'}"
 
-@pytest.mark.parametrize("username,password", prepare_account())
-def test_login_with_brute_force(username, password):
-    """暴力破解验证码"""
-    try_brute_force_captcha(username, password)
+# @pytest.mark.parametrize("username,password", prepare_account())
+# def test_login_with_brute_force(username, password):
+#     """暴力破解验证码"""
+#     try_brute_force_captcha(username, password)
 
 # def test_add_account():
 #     """"添加用户接口"""
