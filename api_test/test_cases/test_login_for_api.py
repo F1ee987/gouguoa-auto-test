@@ -132,7 +132,7 @@ def try_brute_force_captcha(username, password):
 
 # @pytest.mark.parametrize("username,password", prepare_account())
 # def test_login_with_brute_force(username, password):
-#     """暴力破解验证码"""
+#     """暴力破解验证码, 已知验证码范围"""
 #     try_brute_force_captcha(username, password)
 
 # def test_add_account():
