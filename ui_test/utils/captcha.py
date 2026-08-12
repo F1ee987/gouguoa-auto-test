@@ -24,7 +24,8 @@ def calc_captcha(captcha_text: str) -> int:
     replace_map = {
         '>': '7',
         'q': '9',
-        'o': '0'
+        'o': '0',
+        ']': '1'
     }
     first_num_len = 0
     for old, new in replace_map.items():
