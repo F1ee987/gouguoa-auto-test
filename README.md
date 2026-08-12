@@ -1,6 +1,7 @@
 # gouguoa-auto-test
 
-这是 gouguoa 的自动化测试仓库，基于本地搭建测试环境系统，相关系统部署请转到https://blog.gougucms.com/home/book/detail/bid/3.html，使用 Python + pytest 作为主要测试框架，目标是构建稳定、可维护的接口与 UI 自动化测试套件。
+这是 gouguoa 的自动化测试仓库，基于本地搭建测试环境系统，相关系统部署请转到https://blog.gougucms.com/home/book/detail/bid/3.html，
+使用 Python + pytest 作为主要测试框架，目标是构建稳定、可维护的接口与 UI 自动化测试套件。
 
 > 注意：请勿在仓库中提交明文凭据或敏感信息，推荐使用环境变量或 CI Secrets 管理密钥与密码。
 
