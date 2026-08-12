@@ -15,14 +15,21 @@ def ocr_captcha_image(img_path: str) -> str:
     with open(img_path, mode='rb') as f:
         img_bytes = f.read()
     captcha_text = orc.classification(img_bytes)
+    print(f"识别内容>>{captcha_text}")
     return captcha_text
 
 def calc_captcha(captcha_text: str) -> int:
-    """根据识别的算式计算结果 v2版本"""
+    """根据识别的算式计算结果 v3版本"""
     from re import sub
+    replace_map = {
+        '>': '7',
+        'q': '9',
+        'o': '0'
+    }
     first_num_len = 0
-    text = captcha_text.replace('>', '7').replace('q', '9')
-    cleaned = sub(r'\s+', '',text)
+    for old, new in replace_map.items():
+        text = captcha_text.replace(old, new)
+    cleaned = sub(r'\s+', '', text)
     for c in cleaned:
         if c not in string.digits:
             break
