@@ -28,7 +28,8 @@ def calc_captcha(captcha_text: str) -> int:
         ']': '1',
         'z': '2',
         'I': '1',
-        'g': '9'
+        'g': '9',
+        '十': '+'
     }
     first_num_len = 0
     trans_table = str.maketrans(replace_map)
