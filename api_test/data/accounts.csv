@@ -1,8 +1,8 @@
 role,username,password,expected_code,description
-boss,admin,123456,1,超级管理员正常登录
-hr_manager,renshi,123456,1,人事总监正常登录
-dept_manager,lisi,123456,1,部门经理正常登录
-staff,zhousha,123456,1,普通员工正常登录
-disabled_user,zhangsan,123456,0,禁用账号登录失败
-wrong_pwd,admin,654321,0,密码错误登录失败
-empty_user,,123456,0,空用户名登录失败
+boss,admin,123456,0,超级管理员正常登录
+hr_manager,renshi,123456,0,人事总监正常登录
+dept_manager,lisi,123456,0,部门经理正常登录
+staff,zhousha,123456,0,普通员工正常登录
+disabled_user,zhangsan,123456,1,禁用账号登录失败
+wrong_pwd,admin,654321,1,密码错误登录失败
+empty_user,,123456,1,空用户名登录失败
