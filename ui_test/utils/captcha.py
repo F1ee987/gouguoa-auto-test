@@ -25,18 +25,24 @@ def calc_captcha(captcha_text: str) -> int:
         '>': '7',
         'q': '9',
         'o': '0',
-        ']': '1'
+        ']': '1',
+        'z': '2',
+        'I': '1',
+        'g': '9'
     }
     first_num_len = 0
-    for old, new in replace_map.items():
-        text = captcha_text.replace(old, new)
+    trans_table = str.maketrans(replace_map)
+    text = captcha_text.translate(trans_table)
     cleaned = sub(r'\s+', '', text)
     for c in cleaned:
         if c not in string.digits:
             break
         first_num_len += 1
-    num1, num2 = int(cleaned[:first_num_len]), int(cleaned[first_num_len+1:])
-    return num1 + num2
+    first_operand, second_operand = int(cleaned[:first_num_len]), int(cleaned[first_num_len+1:])
+    result = first_operand + second_operand
+    if result > 40:
+        raise ValueError("⚠️计算结果超出验证码范围")
+    return result
 
 if __name__ == '__main__':
     r = ocr_captcha_image('img.png')
