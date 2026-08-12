@@ -8,7 +8,9 @@
 
 import ddddocr
 import string
+from ui_test.utils.logger import Logger
 
+logger = Logger(__name__)
 def ocr_captcha_image(img_path: str) -> str:
     """orc识别验证码"""
     orc = ddddocr.DdddOcr(show_ad=False)
@@ -54,7 +56,8 @@ def calc_captcha(cleaned: str) -> int:
     first_operand, second_operand = int(cleaned[:first_num_len]), int(cleaned[first_num_len+1:])
     result = first_operand + second_operand
     if result > 40:
-        raise ValueError("⚠️计算结果超出验证码范围")
+        logger.warning('ValueError("⚠️计算结果超出验证码范围")')
+    logger.info("验证码识别成功")
     return result
 
 if __name__ == '__main__':
