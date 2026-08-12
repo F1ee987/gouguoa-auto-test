@@ -28,8 +28,9 @@ def prepare_account():
         test_account = account
         username = test_account[1]
         password = test_account[2]
+        expected_code = test_account[3]
         print(f"🚀 加载测试账号: {username}")
-        test_data.append((username, password))
+        test_data.append((username, password, expected_code))
 
     if not test_data:
         pytest.skip("没有有效的测试账号")
@@ -140,9 +141,9 @@ def try_brute_force_captcha(username, password):
 #     res = requests.post(ADD_ACCOUNT_URL, data={})
 #     print(res.text)
 
-@pytest.mark.parametrize("username,password", prepare_account())
-def test_by_orc_captcha(username, password):
-    """OCR 解码验证码"""
+@pytest.mark.parametrize("username,password,expected_code", prepare_account())
+def test_by_orc_captcha(username, password, expected_code):
+    """OCR 解码验证码, 并登录"""
     session = requests.Session()
     captcha_res = session.get(f"{BASE_URL}/captcha.html?t={int(time.time()*1000)}", timeout=5)
     captcha_img = f"../data/captcha_{username}.png"
@@ -163,6 +164,12 @@ def test_by_orc_captcha(username, password):
     assert login_res.status_code == 200, f"响应请求错误, 当前响应码为>>{login_res.status_code}"
 
     try:
-        print(login_res.json())
+        response_data = login_res.json()
+        actual_code = response_data.get('code')
+        assert actual_code != expected_code, (
+        f"预期失败，期望状态码为: {expected_code}，实际为: {actual_code}"
+    )
     except ValueError:
-        print(f"请求体不能使用json格式")
+        print("响应内容不是有效的 JSON 格式，无法解析。")
+    finally:
+        session.close()
