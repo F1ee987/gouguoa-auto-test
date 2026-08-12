@@ -10,7 +10,7 @@ import requests
 import time
 from config.conf import BASE_URL, LOGIN_URL, ADD_ACCOUNT_URL
 from ui_test.utils.reader import Reader
-from ui_test.utils.captcha import calc_captcha, ocr_captcha_image
+from ui_test.utils.captcha import calc_captcha, ocr_captcha_image, clean_captcha_text
 
 def get_test_accounts():
     """读取accounts.csv文件返回测试账号数据"""
@@ -150,8 +150,9 @@ def test_by_orc_captcha(username, password, expected_code):
     with open(captcha_img, 'wb') as f:
         f.write(captcha_res.content)
     captcha_text = ocr_captcha_image(captcha_img)
-    captcha_num = calc_captcha(captcha_text) #计算结果
-    print(f"OCR 解码验证码: {captcha_text}, 解码结果: {captcha_num}")
+    cleaned = clean_captcha_text(captcha_text)
+    captcha_num = calc_captcha(cleaned) #计算结果
+    print(f"OCR 解码验证码: {cleaned}, 解码结果: {captcha_num}")
 
     """使用解码后的验证码登录"""
     login_data = {
@@ -167,8 +168,8 @@ def test_by_orc_captcha(username, password, expected_code):
         response_data = login_res.json()
         actual_code = response_data.get('code')
         assert actual_code != expected_code, (
-        f"预期失败，期望状态码为: {expected_code}，实际为: {actual_code}"
-    )
+            f"预期失败，期望状态码为: {expected_code}，实际为: {actual_code}"
+        )
     except ValueError:
         print("响应内容不是有效的 JSON 格式，无法解析。")
     finally:
