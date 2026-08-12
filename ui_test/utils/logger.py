@@ -12,23 +12,23 @@ class Logger:
     """日志记录器封装类"""
 
     def __init__(self, name: str, level: str = 'DEBUG', log_file: str | None = None):
-        self._logger = logging.getLogger(name)
+        self.__logger = logging.getLogger(name)
 
         # 校验并设置级别
         level_upper = level.upper()
         if not hasattr(logging, level_upper):
             raise ValueError(f"Invalid log level: {level}")
-        self._logger.setLevel(getattr(logging, level_upper))
+        self.__logger.setLevel(getattr(logging, level_upper))
 
-        if not self._logger.handlers:
+        if not self.__logger.handlers:
             formatter = logging.Formatter(
-                '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                '%(asctime)s - %(filename)s:%(lineno)d - %(levelname)s - %(message)s',
                 datefmt='%Y-%m-%d %H:%M:%S'
             )
 
             stream_handler = logging.StreamHandler()
             stream_handler.setFormatter(formatter)
-            self._logger.addHandler(stream_handler)
+            self.__logger.addHandler(stream_handler)
 
             # 文件（可选）
             if log_file and log_file.strip():
@@ -36,14 +36,14 @@ class Logger:
                 log_path.parent.mkdir(parents=True, exist_ok=True)
                 file_handler = logging.FileHandler(log_file, encoding='utf-8')
                 file_handler.setFormatter(formatter)
-                self._logger.addHandler(file_handler)
+                self.__logger.addHandler(file_handler)
 
             # 关键：防止重复输出
-            self._logger.propagate = False
+            self.__logger.propagate = False
 
     @property
     def logger(self) -> logging.Logger:
-        return self._logger
+        return self.__logger
 
     def set_level(self, level: str):
         """
@@ -53,26 +53,26 @@ class Logger:
             level: 日志级别字符串
         """
         log_level = getattr(logging, level.upper(), logging.DEBUG)
-        self._logger.setLevel(log_level)
-        for handler in self._logger.handlers:
+        self.__logger.setLevel(log_level)
+        for handler in self.__logger.handlers:
             handler.setLevel(log_level)
 
     def debug(self, msg: str):
         """输出 DEBUG 级别日志"""
-        self._logger.debug(msg)
+        self.__logger.debug(msg, stacklevel=3)
 
     def info(self, msg: str):
         """输出 INFO 级别日志"""
-        self._logger.info(msg)
+        self.__logger.info(msg, stacklevel=3)
 
     def warning(self, msg: str):
         """输出 WARNING 级别日志"""
-        self._logger.warning(msg)
+        self.__logger.warning(msg, stacklevel=3)
 
     def error(self, msg: str):
         """输出 ERROR 级别日志"""
-        self._logger.error(msg)
+        self.__logger.error(msg, stacklevel=3)
 
     def critical(self, msg: str):
         """输出 CRITICAL 级别日志"""
-        self._logger.critical(msg)
+        self.__logger.critical(msg, stacklevel=3)
