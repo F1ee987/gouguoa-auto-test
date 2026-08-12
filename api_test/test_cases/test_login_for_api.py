@@ -149,7 +149,20 @@ def test_by_orc_captcha(username, password):
     with open(captcha_img, 'wb') as f:
         f.write(captcha_res.content)
     captcha_text = ocr_captcha_image(captcha_img)
-    captcha_num = calc_captcha(captcha_text)
+    captcha_num = calc_captcha(captcha_text) #计算结果
     print(f"OCR 解码验证码: {captcha_text}, 解码结果: {captcha_num}")
 
+    """使用解码后的验证码登录"""
+    login_data = {
+        'username': username,
+        'password': password,
+        'captcha': str(captcha_num)
+    }
+    login_res = session.post(url=LOGIN_URL, data=login_data)
 
+    assert login_res.status_code == 200, f"响应请求错误, 当前响应码为>>{login_res.status_code}"
+
+    try:
+        print(login_res.json())
+    except ValueError:
+        print(f"请求体不能使用json格式")
