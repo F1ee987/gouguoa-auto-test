@@ -8,14 +8,14 @@
 import pytest
 import requests
 import time
-from config.conf import BASE_URL, LOGIN_URL, ADD_ACCOUNT_URL
-from ui_test.utils.reader import Reader
-from ui_test.utils.captcha import calc_captcha, ocr_captcha_image, clean_captcha_text
+from config.conf import BASE_URL, LOGIN_URL, HOME
+from utils.reader import Reader
+from utils.captcha import calc_captcha, ocr_captcha_image, clean_captcha_text
 
 def get_test_accounts():
     """读取accounts.csv文件返回测试账号数据"""
     reader = Reader()
-    return reader.read_csv('../data/accounts.csv')
+    return reader.read_csv(f'{HOME}/config/accounts.csv')
 
 def prepare_account():
     """准备测试所需的账号信息"""
@@ -146,7 +146,7 @@ def test_by_orc_captcha(username, password, expected_code):
     """OCR 解码验证码, 并登录"""
     session = requests.Session()
     captcha_res = session.get(f"{BASE_URL}/captcha.html?t={int(time.time()*1000)}", timeout=5)
-    captcha_img = f"../data/captcha_{username}.png"
+    captcha_img = f"{HOME}/api_test/data/captcha_{username}.png"
     with open(captcha_img, 'wb') as f:
         f.write(captcha_res.content)
     captcha_text = ocr_captcha_image(captcha_img)
@@ -170,6 +170,7 @@ def test_by_orc_captcha(username, password, expected_code):
         assert actual_code != expected_code, (
             f"预期失败，期望状态码为: {expected_code}，实际为: {actual_code}"
         )
+        print(f"✅ 登录信息：{response_data.get('msg')}")
     except ValueError:
         print("响应内容不是有效的 JSON 格式，无法解析。")
     finally:
