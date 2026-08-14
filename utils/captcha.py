@@ -8,7 +8,7 @@
 
 import ddddocr
 import string
-from ui_test.utils.logger import Logger
+from utils.logger import Logger
 
 logger = Logger(__name__)
 def ocr_captcha_image(img_path: str) -> str:
