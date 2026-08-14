@@ -9,8 +9,8 @@ import pytest
 import requests
 import time
 from config.conf import BASE_URL, LOGIN_URL, HOME
-from utils.reader import Reader
-from utils.captcha import CaptchaSolver
+from utils import Reader
+from utils import CaptchaSolver
 
 def get_test_accounts():
     """读取accounts.csv文件返回测试账号数据"""

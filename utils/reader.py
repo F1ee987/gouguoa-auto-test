@@ -48,5 +48,5 @@ class Reader:
 
 if __name__ == '__main__':
     reader = Reader()
-    data = reader.read_csv('../../api_test/data/accounts.csv')
-    print(data[1][3])
+    data = reader.read_csv('../config/accounts.csv')
+    print(data[1])
