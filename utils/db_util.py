@@ -10,7 +10,6 @@ import pymysql
 from pymysql.connections import Connection
 from pymysql import cursors
 from typing import Optional, Any
-from config.conf import USERNAME, PASSWORD, DATABASE, HOST, PORT
 
 class DataBaseConnection:
     """
@@ -81,6 +80,7 @@ class DataBaseConnection:
 
 if __name__ == "__main__":
     # 测试数据库连接
+    from config.conf import USERNAME, PASSWORD, DATABASE, HOST, PORT
     db_conn = DataBaseConnection(HOST, PORT)
     conn = db_conn.get_db_connection(USERNAME, PASSWORD, DATABASE)
     print(db_conn.query('SELECT count(username) FROM oa_admin'))
