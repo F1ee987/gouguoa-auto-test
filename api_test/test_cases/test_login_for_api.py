@@ -8,7 +8,7 @@
 import pytest
 import requests
 import time
-from config.conf import BASE_URL, LOGIN_URL, HOME
+from config.conf import BASE_URL, LOGIN_URL, HOME, ADD_ACCOUNT_URL
 from utils import Reader
 from utils import CaptchaSolver
 
@@ -138,11 +138,6 @@ def try_brute_force_captcha(username, password):
 #     """暴力破解验证码, 已知验证码范围"""
 #     try_brute_force_captcha(username, password)
 
-# def test_add_account():
-#     """"添加用户接口"""
-#     res = requests.post(ADD_ACCOUNT_URL, data={})
-#     print(res.text)
-
 @pytest.mark.api
 @pytest.mark.login
 @pytest.mark.parametrize("username,password,expected_code", prepare_account())
@@ -180,3 +175,8 @@ def test_by_orc_captcha(username, password, expected_code):
         print("响应内容不是有效的 JSON 格式，无法解析。")
     finally:
         session.close()
+
+def test_add_account(admin_api_login):
+    """"添加用户接口"""
+    res = admin_api_login.request("POST" ,ADD_ACCOUNT_URL, data={})
+    print(res.text)
