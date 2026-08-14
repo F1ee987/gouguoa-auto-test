@@ -71,8 +71,8 @@ pytest api_test/test_example.py
 示例环境变量：
 
 ```bash
-export TEST_ENV=staging
-export API_KEY=xxxxxx
+export DB_PASSWORD=root
+export OA_BASE_URL=项目IP地址
 ```
 
 ## CI 集成（示例：GitHub Actions）
@@ -92,7 +92,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.12'
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
