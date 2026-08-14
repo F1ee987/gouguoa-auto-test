@@ -9,3 +9,9 @@ BASE_URL = "http://192.168.198.133:81"  # 基础URL
 LOGIN_URL = f"{BASE_URL}/home/login/login_submit"
 ADD_ACCOUNT_URL = f"{BASE_URL}/user/user/add_user"
 LOGIN_TIP_LOC = ("XPASS", '//*[@id="layui-layer8"]')
+
+#数据库配置
+HOST = "192.168.198.133"
+PORT = "3306"
+USERNAME = "root"
+PASSWORD = "root"
