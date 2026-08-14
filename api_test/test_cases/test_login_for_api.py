@@ -131,6 +131,8 @@ def try_brute_force_captcha(username, password):
     # ---------- 4. 最终断言 ----------
     assert login_in, f"❌ 登录失败: {fail_reason if fail_reason else '所有验证码均未命中'}"
 
+# @pytest.mark.api
+# @pytest.mark.login
 # @pytest.mark.parametrize("username,password", prepare_account())
 # def test_login_with_brute_force(username, password):
 #     """暴力破解验证码, 已知验证码范围"""
@@ -141,6 +143,8 @@ def try_brute_force_captcha(username, password):
 #     res = requests.post(ADD_ACCOUNT_URL, data={})
 #     print(res.text)
 
+@pytest.mark.api
+@pytest.mark.login
 @pytest.mark.parametrize("username,password,expected_code", prepare_account())
 def test_by_orc_captcha(username, password, expected_code):
     """OCR 解码验证码, 并登录"""
