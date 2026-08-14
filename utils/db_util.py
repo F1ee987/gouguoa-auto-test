@@ -49,7 +49,6 @@ class DataBaseConnection:
     def query(self, sql: str, check_size: int = 0) -> Any:
         """
         执行SQL查询,默认返回所有结果.
-        :param connection: 数据库连接对象.
         :param sql: SQL查询语句.
         :param check_size: 检查结果数量.
         :return: 查询结果列表.
@@ -78,7 +77,7 @@ class DataBaseConnection:
 
 if __name__ == "__main__":
     # 测试数据库连接
-    db_conn = DataBaseConnection("192.168.198.129")
+    db_conn = DataBaseConnection("192.168.198.133")
     conn = db_conn.get_db_connection("root", "root", "oa")
-    print(db_conn.query("SELECT count(username) FROM oa_admin"))  # 替换为实际的表名
+    print(db_conn.query('SELECT count(username) FROM oa_admin'))
     db_conn.close()
