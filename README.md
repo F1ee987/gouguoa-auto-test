@@ -15,7 +15,7 @@ gouguoa-auto-test/
 ├── ui_test/               # UI自动化模块
 │   ├── pages/             # 页面对象封装（登录页、审批页、权限页）
 │   ├── test_cases/        # UI测试用例
-│   └── utils/             # 工具类（浏览器驱动管理、数据库操作、截图工具）
+├── utils/                 # 工具类（浏览器驱动管理、数据库操作、截图工具）
 ├── config/                # 配置文件（环境地址、数据库连接信息，避免硬编码）
 ├── reports/               # 测试报告（Allure/pytest-html生成的HTML报告）
 ├── docs/                  # 项目文档（测试方案、缺陷报告、用例设计思路）
