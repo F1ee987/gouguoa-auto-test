@@ -10,7 +10,7 @@ import requests
 import time
 from config.conf import BASE_URL, LOGIN_URL, HOME
 from utils.reader import Reader
-from utils.captcha import calc_captcha, ocr_captcha_image, clean_captcha_text
+from utils.captcha import CaptchaSolver
 
 def get_test_accounts():
     """读取accounts.csv文件返回测试账号数据"""
@@ -148,14 +148,15 @@ def try_brute_force_captcha(username, password):
 @pytest.mark.parametrize("username,password,expected_code", prepare_account())
 def test_by_orc_captcha(username, password, expected_code):
     """OCR 解码验证码, 并登录"""
+    solve = CaptchaSolver()
     session = requests.Session()
     captcha_res = session.get(f"{BASE_URL}/captcha.html?t={int(time.time()*1000)}", timeout=5)
     captcha_img = f"{HOME}/api_test/data/captcha_{username}.png"
     with open(captcha_img, 'wb') as f:
         f.write(captcha_res.content)
-    captcha_text = ocr_captcha_image(captcha_img)
-    cleaned = clean_captcha_text(captcha_text)
-    captcha_num = calc_captcha(cleaned) #计算结果
+    captcha_text = solve.ocr_captcha_image(captcha_img)
+    cleaned =solve.clean_captcha_text(captcha_text)
+    captcha_num = solve.calc_captcha(cleaned) #计算结果
     print(f"OCR 解码验证码: {cleaned}, 解码结果: {captcha_num}")
 
     """使用解码后的验证码登录"""
