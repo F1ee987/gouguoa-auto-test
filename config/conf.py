@@ -5,6 +5,8 @@
 @Author :zhousha
 @Date   :2026/7/23 13:27
 """
+from pathlib import Path
+
 #URL信息
 BASE_URL = "http://192.168.198.133:81"  # 基础URL
 LOGIN_URL = f"{BASE_URL}/home/login/login_submit"
@@ -17,3 +19,6 @@ PORT = 3306
 USERNAME = "root"
 PASSWORD = "root"
 DATABASE = "oa"
+
+#文件路径
+HOME = Path(__file__).parent.parent

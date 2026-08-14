@@ -8,7 +8,6 @@
 import csv
 import yaml
 import json
-from pathlib import Path
 
 class Reader:
     @staticmethod
