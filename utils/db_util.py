@@ -8,18 +8,21 @@
 
 import pymysql
 from pymysql.connections import Connection
+from pymysql import cursors
 from typing import Optional, Any
+from config.conf import USERNAME, PASSWORD, DATABASE, HOST, PORT
 
 class DataBaseConnection:
     """
     数据库连接类，用于连接MySQL数据库并执行查询操作.
     """
-    def __init__(self, host: str) -> None:
+    def __init__(self, host: str, port: int = 3306) -> None:
         """
         初始化数据库连接类.
         :param host: 数据库主机地址.
         """
         self.host = host
+        self.port = port
         self.conn: Optional[Connection] = None
 
     def get_db_connection(self, user: str, password: str, database: str, timeout: int = 5) -> Optional[Connection]:
@@ -37,13 +40,14 @@ class DataBaseConnection:
                 user=user,
                 password=password,
                 database=database,
+                port=self.port,
                 cursorclass=pymysql.cursors.DictCursor,
                 connect_timeout=timeout
             )
-            print(f"✅ 数据库连接成功：主机>>{self.host}，数据库>>{database}")
+            print(f"✅ 数据库连接成功：主机>>{self.host}:{self.port}，数据库>>{database}")
             self.conn = connection
         except pymysql.MySQLError as e:
-            print(f"❌ 数据库连接失败：主机>>{self.host}，数据库>>{database}，错误详情：{e}")
+            print(f"❌ 数据库连接失败：主机>>{self.host}:{self.port}，数据库>>{database}，错误详情：{e}")
             return None
 
     def query(self, sql: str, check_size: int = 0) -> Any:
@@ -71,13 +75,13 @@ class DataBaseConnection:
         """
         if self.conn:
             self.conn.close()
-            print(f"✅ 数据库连接已关闭：主机>>{self.host}")
+            print(f"✅ 数据库连接已关闭：主机>>{self.host}:{self.port}")
         else:
             print("❌ 数据库连接未建立或已关闭。")
 
 if __name__ == "__main__":
     # 测试数据库连接
-    db_conn = DataBaseConnection("192.168.198.133")
-    conn = db_conn.get_db_connection("root", "root", "oa")
+    db_conn = DataBaseConnection(HOST, PORT)
+    conn = db_conn.get_db_connection(USERNAME, PASSWORD, DATABASE)
     print(db_conn.query('SELECT count(username) FROM oa_admin'))
     db_conn.close()
