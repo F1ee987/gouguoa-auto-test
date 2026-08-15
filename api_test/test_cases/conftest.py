@@ -12,14 +12,6 @@ import requests
 from config.conf import HOME, LOGIN_URL, BASE_URL
 from utils import Reader, CaptchaSolver
 
-@pytest.fixture(scope='session',autouse=True)
-def timer():
-    start_time: float = time()
-    print("开始运行>>")
-    yield
-    end_time: float = time()
-    print(f"运行总时长>>{end_time-start_time:.5f} seconds",flush=True)
-
 @pytest.fixture(scope='module')
 def admin_api_login() -> Generator[requests.Session]:
     r = Reader()
