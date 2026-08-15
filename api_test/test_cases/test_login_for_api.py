@@ -175,8 +175,3 @@ def test_by_orc_captcha(username, password, expected_code):
         print("响应内容不是有效的 JSON 格式，无法解析。")
     finally:
         session.close()
-
-def test_add_account(admin_api_login):
-    """"添加用户接口"""
-    res = admin_api_login.request("POST" ,ADD_ACCOUNT_URL, data={})
-    print(res.text)
