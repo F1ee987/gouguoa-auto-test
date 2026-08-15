@@ -11,7 +11,6 @@ gouguoa-auto-test/
 ├── api_test/              # 接口测试模块
 │   ├── test_cases/        # 接口测试用例（pytest脚本）
 │   ├── data/              # 测试数据（多角色账号、审批参数CSV）
-│   └── apifox-export/     # Apifox导出的接口集合（新手可选，不用写代码）
 ├── ui_test/               # UI自动化模块
 │   ├── pages/             # 页面对象封装（登录页、审批页、权限页）
 │   ├── test_cases/        # UI测试用例
@@ -43,7 +42,7 @@ pip install -r requirements.txt
 
 ## 使用 pytest 运行测试
 
-仓库已包含 `pytest.ini`，主要配置项包括：addopts（默认生成 HTML 报告、并行执行 -n 7）、testpaths（默认扫描 ./api-test 和 ./ui-test，本仓库以实际目录为准）。
+仓库已包含 `pytest.ini`，主要配置项包括：addopts（默认生成 HTML 报告）、testpaths（默认扫描 ./api-test 和 ./ui-test，本仓库以实际目录为准）。
 
 在仓库根目录运行：
 
@@ -59,7 +58,7 @@ pytest api_test/test_example.py
 
 ## 关于 run.py
 
-仓库包含一个示例脚本 `run.py`，其逻辑会向 `http://192.168.198.133:81` 发起请求并尝试多次带验证码的登录。该脚本仅作演示使用：
+仓库包含一个示例脚本 `run.py`，其逻辑会执行所有测试项目：
 
 - 请不要在公网或非测试环境运行。
 - 若用于调试，请先确认目标环境允许此类请求并使用合适的账户信息。
@@ -72,8 +71,8 @@ pytest api_test/test_example.py
 示例环境变量：
 
 ```bash
-export TEST_ENV=staging
-export API_KEY=xxxxxx
+export DB_PASSWORD=root
+export OA_BASE_URL=项目IP地址
 ```
 
 ## CI 集成（示例：GitHub Actions）
@@ -93,7 +92,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.12'
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
