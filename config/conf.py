@@ -15,9 +15,9 @@ LOGIN_TIP_LOC = ("XPASS", '//*[@id="layui-layer8"]')
 
 #数据库配置
 DB = {
-    "host" : "192.168.198.133:81",
+    "host" : "192.168.198.133",
     "port" : 3306,
-    "username" : "root",
+    "user" : "root",
     "password" : "root",
     "database" : "oa"
 }

@@ -24,6 +24,8 @@ class DataBaseConnection:
     def get_db_connection(self, host: str, port: int, user: str, password: str, database: str, timeout: int = 5) -> Optional[Connection]:
         """
         连接MySQL数据库.
+        :param port:
+        :param host:
         :param user: 用户名.
         :param password: 密码.
         :param database: 数据库名称.
