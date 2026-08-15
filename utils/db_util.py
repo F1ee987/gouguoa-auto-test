@@ -48,7 +48,7 @@ class DataBaseConnection:
             print(f"❌ 数据库连接失败：主机>>{host}:{port}，数据库>>{database}，错误详情：{e}")
             return None
 
-    def query(self, sql: str, check_size: int = 0) -> Any:
+    def run_query(self, sql: str, check_size: int = 0) -> Any:
         """
         执行SQL查询,默认返回所有结果.
         :param sql: SQL查询语句.
@@ -82,5 +82,5 @@ if __name__ == "__main__":
     from config.conf import DB
     db_conn = DataBaseConnection()
     conn = db_conn.get_db_connection(**DB)
-    print(db_conn.query('SELECT count(username) FROM oa_admin'))
+    print(db_conn.run_query('SELECT count(username) FROM oa_admin'))
     db_conn.close()
