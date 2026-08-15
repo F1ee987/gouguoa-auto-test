@@ -9,8 +9,14 @@ from typing import Generator
 import pytest
 from time import time
 import requests
-from config.conf import HOME, LOGIN_URL, BASE_URL
-from utils import Reader, CaptchaSolver
+from config.conf import HOME, LOGIN_URL, BASE_URL, HOST
+from utils import Reader, CaptchaSolver, DataBaseConnection
+
+@pytest.fixture(scope='function')
+def db_connect() -> Generator[DataBaseConnection]:
+    conn = DataBaseConnection(HOST)
+    yield conn
+    conn.close()
 
 @pytest.fixture(scope='module')
 def admin_api_login() -> Generator[requests.Session]:
@@ -28,6 +34,7 @@ def admin_api_login() -> Generator[requests.Session]:
         'captcha': s.calc_captcha(s.clean_captcha_text(s.ocr_captcha_image(img)))
     }
     res = session.request('POST', LOGIN_URL, data=login_data)
+    print(res.json())
     assert res.json().get('msg') == "登录成功", f"连接失败"
     print("✔连接成功")
     yield session
