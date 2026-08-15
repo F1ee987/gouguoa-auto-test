@@ -7,6 +7,8 @@
 """
 from time import time
 import pytest
+from utils import Logger
+from typing import Generator
 
 @pytest.fixture(scope='session',autouse=True)
 def timer():
@@ -15,3 +17,9 @@ def timer():
     yield
     end_time: float = time()
     print(f"运行总时长>>{end_time-start_time:.5f} seconds",flush=True)
+
+@pytest.fixture(scope='session')
+def logger() -> Generator[Logger]:
+    log = Logger(__file__)
+    yield log
+    print("日志记录关闭")
