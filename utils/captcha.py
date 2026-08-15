@@ -71,6 +71,6 @@ class CaptchaSolver:
 
 if __name__ == '__main__':
     solve = CaptchaSolver()
-    r = solve.ocr_captcha_image('img.png')
+    r = solve.ocr_captcha_image('captcha_temp.png')
 
     print(solve.calc_captcha(solve.clean_captcha_text(r)))
