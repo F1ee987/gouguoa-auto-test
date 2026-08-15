@@ -9,12 +9,12 @@ from typing import Generator
 import pytest
 from time import time
 import requests
-from config.conf import HOME, LOGIN_URL, BASE_URL, HOST
+from config.conf import HOME, LOGIN_URL, BASE_URL, DB
 from utils import Reader, CaptchaSolver, DataBaseConnection
 
 @pytest.fixture(scope='function')
 def db_connect() -> Generator[DataBaseConnection]:
-    conn = DataBaseConnection(HOST)
+    conn = DataBaseConnection()
     yield conn
     conn.close()
 
@@ -25,7 +25,7 @@ def admin_api_login() -> Generator[requests.Session]:
     admin_data = r.read_csv(f"{HOME}/config/accounts.csv")[1]
     session = requests.Session()
     res =session.request('GET', f"{BASE_URL}/captcha.html?t={int(time()*1000)}", timeout=5)
-    img = f"{HOME}/utils/img.png"
+    img = f"{HOME}/utils/captcha_temp.png"
     with open(img, 'wb') as f:
         f.write(res.content)
     login_data = {

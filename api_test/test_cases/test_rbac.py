@@ -6,10 +6,10 @@
 @Date   :2026/8/15 14:34
 """
 import pytest
-from config.conf import ADD_ACCOUNT_URL
+from config.conf import ADD_ACCOUNT_URL, DB
 
 @pytest.mark.rbac
-def test_add_account(admin_api_login):
+def test_add_account(admin_api_login, db_connect):
     """"添加用户接口"""
     change_data = {
         "name": "王五",
@@ -34,4 +34,7 @@ def test_add_account(admin_api_login):
         "content-type": "application/json; charset=utf-8"
     }
     resp = admin_api_login.request("POST" ,ADD_ACCOUNT_URL, data=change_data, headers=headers)
-    assert '没有权限' not in resp.text       # 显式排除失败页
+    assert '没有权限' not in resp.text, '操作失败'       # 显式排除失败页
+    db = db_connect.get_db_connection(
+        **DB
+    )

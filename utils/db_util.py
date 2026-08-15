@@ -15,16 +15,13 @@ class DataBaseConnection:
     """
     数据库连接类，用于连接MySQL数据库并执行查询操作.
     """
-    def __init__(self, host: str, port: int = 3306) -> None:
+    def __init__(self) -> None:
         """
         初始化数据库连接类.
-        :param host: 数据库主机地址.
         """
-        self.host = host
-        self.port = port
         self.conn: Optional[Connection] = None
 
-    def get_db_connection(self, user: str, password: str, database: str, timeout: int = 5) -> Optional[Connection]:
+    def get_db_connection(self, host: str, port: int, user: str, password: str, database: str, timeout: int = 5) -> Optional[Connection]:
         """
         连接MySQL数据库.
         :param user: 用户名.
@@ -35,18 +32,18 @@ class DataBaseConnection:
         """
         try:
             connection: Connection = pymysql.connect(
-                host=self.host,
+                host=host,
                 user=user,
                 password=password,
                 database=database,
-                port=self.port,
+                port=port,
                 cursorclass=pymysql.cursors.DictCursor,
                 connect_timeout=timeout
             )
-            print(f"✅ 数据库连接成功：主机>>{self.host}:{self.port}，数据库>>{database}")
+            print(f"✅ 数据库连接成功：主机>>{host}:{port}，数据库>>{database}")
             self.conn = connection
         except pymysql.MySQLError as e:
-            print(f"❌ 数据库连接失败：主机>>{self.host}:{self.port}，数据库>>{database}，错误详情：{e}")
+            print(f"❌ 数据库连接失败：主机>>{host}:{port}，数据库>>{database}，错误详情：{e}")
             return None
 
     def query(self, sql: str, check_size: int = 0) -> Any:
@@ -74,14 +71,14 @@ class DataBaseConnection:
         """
         if self.conn:
             self.conn.close()
-            print(f"✅ 数据库连接已关闭：主机>>{self.host}:{self.port}")
+            print(f"✅ 数据库连接已关闭")
         else:
             print("❌ 数据库连接未建立或已关闭。")
 
 if __name__ == "__main__":
     # 测试数据库连接
-    from config.conf import USERNAME, PASSWORD, DATABASE, HOST, PORT
-    db_conn = DataBaseConnection(HOST, PORT)
-    conn = db_conn.get_db_connection(USERNAME, PASSWORD, DATABASE)
+    from config.conf import DB
+    db_conn = DataBaseConnection()
+    conn = db_conn.get_db_connection(**DB)
     print(db_conn.query('SELECT count(username) FROM oa_admin'))
     db_conn.close()
