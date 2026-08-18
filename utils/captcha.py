@@ -8,7 +8,7 @@
 
 import ddddocr
 import string
-from .logger import Logger
+from utils.logger import Logger
 
 logger = Logger(__file__)
 
