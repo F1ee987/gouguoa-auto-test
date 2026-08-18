@@ -56,7 +56,7 @@ class CaptchaSolver:
 
     @staticmethod
     def calc_captcha(cleaned: str) -> int:
-        """根据识别的算式计算结果 v4版本"""
+        """根据识别的算式计算结果 v5版本"""
         first_num_len = 0
         for c in cleaned:
             if c not in string.digits:
