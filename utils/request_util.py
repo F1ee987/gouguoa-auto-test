@@ -18,8 +18,9 @@ class RequestHandle:
             requests.Session() if use_session else None
         )
 
-    @staticmethod
-    def __request(method: str, url: str, **kwargs) -> requests.Response:
+    def __request(self, method: str, url: str, **kwargs) -> requests.Response:
+        if self.session:
+            return self.session.request(method=method, url=url, **kwargs)
         return requests.request(method=method, url=url, **kwargs)
 
     def get(self, url: str, **kwargs) -> requests.Response:
