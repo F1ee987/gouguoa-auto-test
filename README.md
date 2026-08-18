@@ -5,24 +5,43 @@
 
 > 注意：请勿在仓库中提交明文凭据或敏感信息，推荐使用环境变量或 CI Secrets 管理密钥与密码。
 
-## 项目结构（当前）
+## 项目结构
 ```text
 gouguoa-auto-test/
 ├── api_test/              # 接口测试模块
-│   ├── test_cases/        # 接口测试用例（pytest脚本）
-│   ├── data/              # 测试数据（多角色账号、审批参数CSV）
+│   ├── test_cases/        # 接口测试用例
+│   │   ├── conftest.py    # 接口测试夹具
+│   │   ├── test_login_for_api.py  # 登录接口测试（含OCR验证码识别）
+│   │   ├── test_rbac.py   # 权限控制接口测试
+│   │   ├── test_upload.py # 文件上传接口测试
+│   │   └── reports/       # 接口测试报告
+│   └── data/              # 测试数据
+│       ├── captcha_data/  # 验证码图片缓存
+│       ├── upload_data/   # 上传测试文件
+│       └── upload_data.csv
 ├── ui_test/               # UI自动化模块
-│   ├── pages/             # 页面对象封装（登录页、审批页、权限页）
-│   ├── test_cases/        # UI测试用例
-├── utils/                 # 工具类（浏览器驱动管理、数据库操作、截图工具）
-├── config/                # 配置文件（环境地址、数据库连接信息，避免硬编码）
-├── reports/               # 测试报告（Allure/pytest-html生成的HTML报告）
-├── docs/                  # 项目文档（测试方案、缺陷报告、用例设计思路）
+│   ├── conftest.py        # UI测试夹具
+│   ├── pages/             # 页面对象模式
+│   │   └── base_page.py   # 基础页面类（Selenium封装）
+│   └── test_cases/        # UI测试用例
+├── utils/                 # 通用工具类
+│   ├── __init__.py
+│   ├── captcha.py         # OCR验证码识别与计算
+│   ├── db_util.py         # 数据库操作工具
+│   ├── logger.py          # 日志工具
+│   ├── reader.py          # CSV/文件读取工具
+│   └── request_util.py    # HTTP请求封装（Session支持）
+├── config/                # 配置文件
+│   ├── conf.py            # 环境配置（URL、数据库、路径）
+│   └── accounts.csv       # 测试账号数据
+├── docs/                  # 项目文档
+├── reports/               # 测试报告（pytest-html）
+├── .gitignore             # Git 忽略规则
 ├── conftest.py            # pytest 全局夹具 (Fixture)
 ├── pytest.ini             # pytest 配置文件
-├── run.py                 # 启动与执行入口脚本
-├── requirements.txt       # 项目环境需求
-└── README.md              # 项目说明文档
+├── run.py                 # 测试执行入口
+├── requirements.txt       # Python 依赖
+└── README.md              # 项目说明
 ```
 ## 依赖与运行环境
 
@@ -42,16 +61,21 @@ pip install -r requirements.txt
 
 ## 使用 pytest 运行测试
 
-仓库已包含 `pytest.ini`，主要配置项包括：addopts（默认生成 HTML 报告）、testpaths（默认扫描 ./api-test 和 ./ui-test，本仓库以实际目录为准）。
-
-在仓库根目录运行：
-
 ```bash
-# 运行全部测试（会使用 pytest.ini 中的 addopts）
+# 运行全部测试
 pytest
 
-# 或运行单个测试文件
-pytest api_test/test_example.py
+# 运行接口测试
+pytest api_test/
+
+# 运行 UI 测试
+pytest ui_test/
+
+# 运行单个测试文件(示例)
+pytest api_test/test_cases/test_login_for_api.py
+
+# 运行特定测试用例
+pytest api_test/test_cases/test_login_for_api.py::test_by_orc_captcha
 ```
 
 生成的报告默认输出到 `./reports/report.html`（由 pytest.ini 的 --html 参数控制）。
