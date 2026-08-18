@@ -82,10 +82,21 @@ pytest api_test/test_cases/test_login_for_api.py::test_by_orc_captcha
 
 ## 关于 run.py
 
-仓库包含一个示例脚本 `run.py`，其逻辑会执行所有测试项目：
+`run.py` 为测试执行入口脚本，会调用 `pytest.main()` 执行所有测试。
 
-- 请不要在公网或非测试环境运行。
-- 若用于调试，请先确认目标环境允许此类请求并使用合适的账户信息。
+## 核心功能
+
+### OCR 验证码识别
+项目使用 `utils/captcha.py` 实现 OCR 验证码自动识别，支持：
+- 验证码图片下载与缓存（`api_test/data/captcha_data/`）
+- 算式验证码识别与计算（如 `15+3=18`）
+- 识别失败自动重试机制
+
+### 会话管理
+`utils/request_util.py` 提供基于 Session 的 HTTP 请求封装，支持：
+- Cookie 持久化
+- 自动化登录状态保持
+- 防盗链 Token 处理
 
 ## 配置与敏感信息管理
 
