@@ -145,7 +145,7 @@ def test_by_orc_captcha(username, password, expected_code):
     solve = CaptchaSolver()
     session = RequestHandle(True)
     captcha_res = session.get(f"{BASE_URL}/captcha.html?t={int(time.time()*1000)}", timeout=5)
-    captcha_img = f"{HOME}/api_test/data/captcha_{username}.png"
+    captcha_img = f"{HOME}/api_test/data/captcha_data/captcha_{username}.png"
     with open(captcha_img, 'wb') as f:
         f.write(captcha_res.content)
     captcha_text = solve.ocr_captcha_image(captcha_img)
