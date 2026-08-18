@@ -1,0 +1,5 @@
+file_type,path,	expected_result
+pdf,/api_test/data/upload_data/pdf.pdf,0
+csv,/api_test/data/upload_data/upload.csv,1
+txt,/api_test/data/upload_data/upload.txt,0
+png,/api_test/data/upload_data/upload.png,0
