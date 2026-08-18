@@ -7,6 +7,11 @@
 """
 import pytest
 from config.conf import ADD_ACCOUNT_URL, DB
+from string import digits
+from random import choice
+
+def random_str(length=10):
+    return ''.join(choice(digits) for _ in range(length))
 
 @pytest.mark.rbac
 def test_add_account(admin_api_login, db_connect):
@@ -19,13 +24,13 @@ def test_add_account(admin_api_login, db_connect):
     change_data = {
         # 员工基本信息
         "name": "赵启",                  # 员工姓名（必填）
-        "mobile": "14345678818",         # 手机号码（必填，用于登录）
-        "email": "2296543816@qq.com",    # 电子邮箱（必填）
-        "sex": "0",                      # 员工性别：0-未知，1-男，2-女（必填）
+        "mobile": "1"+random_str(),         # 手机号码（必填，用于登录）
+        "email": random_str()+"@gougucms.com",    # 电子邮箱（必填）
+        "sex": str(choice([1,2])),                      # 员工性别：1-男，2-女（必填）
         "entry_time": "2026-08-15",      # 入职日期（必填，格式：YYYY-MM-DD）
 
         # 组织架构信息
-        "did": "7",                      # 主部门ID（必填，对应部门表的ID）
+        "did": str(choice([i for i in range(1,16)])),                      # 主部门ID（必填，对应部门表的ID）
         "position_id": "4",              # 岗位职称ID（必填，对应岗位表的ID）
         "department_ids": "",            # 次要部门ID（多个用逗号分隔，可为空）
         "pid": "0",                      # 上级主管ID（0表示无上级）
