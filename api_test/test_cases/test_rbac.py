@@ -14,11 +14,12 @@ def test_add_account(admin_api_login, db_connect):
     change_data = {
         "name": "王六",
         "mobile": "14345678918",
-        "email": "2296543815@qq.com",
+        "email": "2296543810@qq.com",
         "sex": "1",
         "entry_time": "2026-08-15",
         "did": "7",
         "position_id": "4",
+        "department_ids": "",
         "pid": "0",
         "type": "2",
         "is_staff": "1",
@@ -29,12 +30,17 @@ def test_add_account(admin_api_login, db_connect):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" 
         "(KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-        "Cookies" : 'PHPSESSID=bf4aed18d346534ac3654a0f7a1d4e22; gougutab={"tab_id":"97","tab_array"'
+        "X-Requested-With": "XMLHttpRequest"
     }
     resp = admin_api_login.post(ADD_ACCOUNT_URL, data=change_data, headers=headers)
-    print(resp.text)
-    assert '没有权限' not in resp.text, '操作失败'       # 显式排除失败页
+    assert '没有权限' not in resp.json(), '操作失败'       # 显式排除失败页
     db_connect.get_db_connection(
         **DB
     )
+    res = resp.json()
+    code = res.get('code')
+    msg = res.get('msg')
+    assert code == 0, '操作失败'
+    assert msg == '操作成功', f'操作失败, 当前信息: {msg}'
+    print(res)
     print(db_connect.run_query('SELECT * FROM oa_admin where username = "wangliu"')[0].get('email'))
