@@ -8,9 +8,8 @@
 import pytest
 import requests
 import time
-from config.conf import BASE_URL, LOGIN_URL, HOME, ADD_ACCOUNT_URL
-from utils import Reader
-from utils import CaptchaSolver
+from config.conf import BASE_URL, LOGIN_URL, HOME
+from utils import Reader, CaptchaSolver, RequestHandle
 
 def get_test_accounts():
     """读取accounts.csv文件返回测试账号数据"""
@@ -144,7 +143,7 @@ def try_brute_force_captcha(username, password):
 def test_by_orc_captcha(username, password, expected_code):
     """OCR 解码验证码, 并登录"""
     solve = CaptchaSolver()
-    session = requests.Session()
+    session = RequestHandle(True)
     captcha_res = session.get(f"{BASE_URL}/captcha.html?t={int(time.time()*1000)}", timeout=5)
     captcha_img = f"{HOME}/api_test/data/captcha_{username}.png"
     with open(captcha_img, 'wb') as f:

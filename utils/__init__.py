@@ -9,5 +9,6 @@ from .captcha import CaptchaSolver
 from .reader import Reader
 from .logger import Logger
 from .db_util import DataBaseConnection
+from .request_util import RequestHandle
 
-__all__ = ['CaptchaSolver', 'DataBaseConnection', 'Reader', 'Logger']
+__all__ = ['CaptchaSolver', 'DataBaseConnection', 'Reader', 'Logger', 'RequestHandle']
