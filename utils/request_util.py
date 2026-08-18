@@ -19,16 +19,23 @@ class RequestHandle:
         )
 
     def __request(self, method: str, url: str, **kwargs) -> requests.Response:
+        """
+        发送请求,
+        如果使用了 Session，则使用 Session 发送请求，否则直接使用 requests 发送请求
+        """
         if self.session:
             return self.session.request(method=method, url=url, **kwargs)
         return requests.request(method=method, url=url, **kwargs)
 
     def get(self, url: str, **kwargs) -> requests.Response:
+        """发送 GET 请求"""
         return self.__request(method='GET', url=url, **kwargs)
 
     def post(self, url: str, **kwargs) -> requests.Response:
+        """发送 POST 请求"""
         return self.__request('POST', url, **kwargs)
 
     def close(self) -> None:
+        """关闭 Session,如果使用了 Session """
         if self.session:
             self.session.close()
