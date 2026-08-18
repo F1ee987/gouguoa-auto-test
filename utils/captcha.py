@@ -66,6 +66,12 @@ class CaptchaSolver:
         result = first_operand + second_operand
         if result > 40:
             logger.warning('ValueError("⚠️计算结果超出验证码范围")')
+            print("识别结果超出验证码范围，重新识别验证码....")
+            if first_operand >= 70:
+                first_operand = first_operand - 50
+            elif second_operand >= 70:
+                second_operand = second_operand - 50
+            result = first_operand + second_operand
         logger.info("验证码识别成功")
         return result
 
