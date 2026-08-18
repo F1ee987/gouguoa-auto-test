@@ -11,21 +11,38 @@ from config.conf import ADD_ACCOUNT_URL, DB
 @pytest.mark.rbac
 def test_add_account(admin_api_login, db_connect):
     """"添加用户接口"""
+    db_connect.get_db_connection(
+        **DB
+    )
+    p_num = db_connect.run_query('SELECT count(*) FROM oa_admin')[0].get('count(*)')  # 获取当前员工总数
+    # 添加用户数据
     change_data = {
-        "name": "王六",
-        "mobile": "14345678918",
-        "email": "2296543810@qq.com",
-        "sex": "1",
-        "entry_time": "2026-08-15",
-        "did": "7",
-        "position_id": "4",
-        "department_ids": "",
-        "pid": "0",
-        "type": "2",
-        "is_staff": "1",
-        "is_hide": "0",
-        "auth_did": "3",
-        'id': 7
+        # 员工基本信息
+        "name": "赵启",                  # 员工姓名（必填）
+        "mobile": "14345678818",         # 手机号码（必填，用于登录）
+        "email": "2296543816@qq.com",    # 电子邮箱（必填）
+        "sex": "0",                      # 员工性别：0-未知，1-男，2-女（必填）
+        "entry_time": "2026-08-15",      # 入职日期（必填，格式：YYYY-MM-DD）
+
+        # 组织架构信息
+        "did": "7",                      # 主部门ID（必填，对应部门表的ID）
+        "position_id": "4",              # 岗位职称ID（必填，对应岗位表的ID）
+        "department_ids": "",            # 次要部门ID（多个用逗号分隔，可为空）
+        "pid": "0",                      # 上级主管ID（0表示无上级）
+
+        # 员工属性
+        "type": "2",                     # 员工类型：1-正式，2-试用，3-实习（必填）
+        "is_staff": "1",                 # 身份类型：1-企业员工，2-劳动派遣，3-兼职员工（必填）
+        "is_hide": "0",                  # 是否隐藏联系方式：0-否，1-是
+
+        # 权限控制
+        "auth_did": "3",                 # 数据权限范围：
+        # 0-仅自己，1-主部门，2-次部门，3-主次部门，
+        # 4-主部门及子部门，5-次部门及子部门，6-主次部门及子部门，
+        # 7-主部门顶级及子部门，8-次部门顶级及子部门，9-主次顶级及子部门，10-所有部门
+
+        # 关键标识
+        'id': p_num+1                    # 员工ID（必填，用于指定修改哪个员工）
     }
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" 
@@ -34,13 +51,10 @@ def test_add_account(admin_api_login, db_connect):
     }
     resp = admin_api_login.post(ADD_ACCOUNT_URL, data=change_data, headers=headers)
     assert '没有权限' not in resp.json(), '操作失败'       # 显式排除失败页
-    db_connect.get_db_connection(
-        **DB
-    )
     res = resp.json()
+    print(res)
     code = res.get('code')
     msg = res.get('msg')
     assert code == 0, '操作失败'
     assert msg == '操作成功', f'操作失败, 当前信息: {msg}'
-    print(res)
-    print(db_connect.run_query('SELECT * FROM oa_admin where username = "wangliu"')[0].get('email'))
+    print(db_connect.run_query('SELECT * FROM oa_admin where username = "zhaoqi"')[0])
