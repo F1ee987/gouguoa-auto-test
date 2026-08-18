@@ -156,7 +156,9 @@ jobs:
 
 ## 许可证
 
-该仓库当前未指定具体开源协议。若需要公开发布，请添加 LICENSE 文件（例如 MIT、Apache-2.0 等）。
+本项目采用 [MIT 许可证](LICENSE)。
+
+Copyright (c) 2026 F1ee987
 
 ## 联系方式
 
