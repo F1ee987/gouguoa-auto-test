@@ -29,9 +29,9 @@ def test_add_account(admin_api_login, db_connect):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" 
         "(KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-        "Cookies" : 'province_id=1; city_id=72; district_id=2799; PHPSESSID=bf4aed18d346534ac3654a0f7a1d4e22; gougutab={"tab_id":"97","tab_array"'
+        "Cookies" : 'PHPSESSID=bf4aed18d346534ac3654a0f7a1d4e22; gougutab={"tab_id":"97","tab_array"'
     }
-    resp = admin_api_login.request("POST" ,ADD_ACCOUNT_URL, data=change_data, headers=headers)
+    resp = admin_api_login.post(ADD_ACCOUNT_URL, data=change_data, headers=headers)
     print(resp.text)
     assert '没有权限' not in resp.text, '操作失败'       # 显式排除失败页
     db_connect.get_db_connection(
