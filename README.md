@@ -14,8 +14,7 @@ gouguoa-auto-test/
 │   │   ├── test_login_for_api.py  # 登录接口测试（含OCR验证码识别）
 │   │   ├── test_rbac.py   # 权限控制接口测试
 │   │   ├── test_upload.py # 文件上传接口测试
-│   │   ├── test_approval_flow.py #全流程请假审批测试
-│   │   └── reports/       # 接口测试报告
+│   │   └── test_approval_flow.py #全流程请假审批测试
 │   └── data/              # 测试数据
 │       ├── captcha_data/  # 验证码图片缓存
 │       ├── upload_data/   # 上传测试文件
@@ -23,7 +22,8 @@ gouguoa-auto-test/
 ├── ui_test/               # UI自动化模块
 │   ├── conftest.py        # UI测试夹具
 │   ├── pages/             # 页面对象模式
-│   │   └── base_page.py   # 基础页面类（Selenium封装）
+│       ├── login_page.py      #登录页面
+│       └── base_page.py   # 基础页面类（Selenium封装）
 │   └── test_cases/        # UI测试用例
 ├── utils/                 # 通用工具类
 │   ├── __init__.py
