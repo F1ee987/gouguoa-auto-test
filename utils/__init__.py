@@ -6,7 +6,7 @@
 @Date   :2026/8/14 15:07
 """
 from .captcha import CaptchaSolver
-from .reader import Reader
+from .file_reader import Reader
 from .logger import Logger
 from .db_util import DataBaseConnection
 from .request_util import RequestHandle
