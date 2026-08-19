@@ -20,6 +20,6 @@ def timer():
 
 @pytest.fixture(scope='session')
 def logger() -> Generator[Logger]:
-    log = Logger(__file__)
+    log = Logger(__name__)
     yield log
     print("日志记录关闭")
