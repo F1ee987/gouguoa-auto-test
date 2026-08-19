@@ -22,8 +22,8 @@ gouguoa-auto-test/
 ├── ui_test/               # UI自动化模块
 │   ├── conftest.py        # UI测试夹具
 │   ├── pages/             # 页面对象模式
-│       ├── login_page.py      #登录页面
-│       └── base_page.py   # 基础页面类（Selenium封装）
+│   │   ├── login_page.py      #登录页面
+│   │   └── base_page.py   # 基础页面类（Selenium封装）
 │   └── test_cases/        # UI测试用例
 ├── utils/                 # 通用工具类
 │   ├── __init__.py
@@ -40,7 +40,7 @@ gouguoa-auto-test/
 ├── .gitignore             # Git 忽略规则
 ├── conftest.py            # pytest 全局夹具 (Fixture)
 ├── pytest.ini             # pytest 配置文件
-├── run.py                 # 测试执行入口
+├── run.py                 # 统一测试执行入口
 ├── requirements.txt       # Python 依赖
 └── README.md              # 项目说明
 ```
