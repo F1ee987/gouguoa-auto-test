@@ -51,7 +51,6 @@ def _login_session(csv_row_index: int, logger) -> RequestHandle:
         'captcha': captcha_value,
     }
     login_res = sess.post(LOGIN_URL, data=login_data)
-    print(login_res.json())
     assert login_res.json().get('msg') == "登录成功", logger.error("登录失败")
     logger.info("登录成功")
     return sess
