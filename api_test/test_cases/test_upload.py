@@ -33,7 +33,7 @@ def load_upload_test_data():
     return data
 
 @pytest.mark.parametrize("filetype, path, expected", load_upload_test_data())
-def test_upload(filetype, path, expected, admin_api_login):
+def test_upload(filetype, path, expected, admin_api_login, logger):
     with open(f'{str(HOME)+path}', 'rb') as f:
         upload_res = admin_api_login.post(
             FILE_UPLOAD,
@@ -48,4 +48,4 @@ def test_upload(filetype, path, expected, admin_api_login):
     code = upload_json.get('code')
     msg = upload_json.get('msg', '')
     assert str(code) == expected, f'上传失败, 当前状态：{msg}'
-    print(f"✅ 上传文件成功，状态码：{code}, 消息：{msg}")
+    logger.info(f"✅ 上传文件成功，状态码：{code}, 消息：{msg}")
