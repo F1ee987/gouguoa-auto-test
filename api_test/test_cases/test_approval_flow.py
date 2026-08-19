@@ -8,7 +8,6 @@
 from config.conf import SUBMIT_CHECK, APPROVE_URL
 from datetime import datetime
 from random import choice
-import pytest
 
 class TestLeaveApprovalFlow:
     """请假审批全流程"""
