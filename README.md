@@ -14,6 +14,7 @@ gouguoa-auto-test/
 │   │   ├── test_login_for_api.py  # 登录接口测试（含OCR验证码识别）
 │   │   ├── test_rbac.py   # 权限控制接口测试
 │   │   ├── test_upload.py # 文件上传接口测试
+│   │   ├── test_approval_flow.py #全流程请假审批测试
 │   │   └── reports/       # 接口测试报告
 │   └── data/              # 测试数据
 │       ├── captcha_data/  # 验证码图片缓存
@@ -29,7 +30,7 @@ gouguoa-auto-test/
 │   ├── captcha.py         # OCR验证码识别与计算
 │   ├── db_util.py         # 数据库操作工具
 │   ├── logger.py          # 日志工具
-│   ├── reader.py          # CSV/文件读取工具
+│   ├── file_reader.py     # 文件读取工具
 │   └── request_util.py    # HTTP请求封装（Session支持）
 ├── config/                # 配置文件
 │   ├── conf.py            # 环境配置（URL、数据库、路径）
