@@ -13,20 +13,16 @@ from random import choice
 def random_str(length=9):
     return ''.join(choice(digits) for _ in range(length))
 
-@pytest.mark.rbac
-def test_add_account(admin_api_login, db_connect):
-    """"添加用户接口"""
-    db_connect.get_db_connection(
-        **DB
-    )
-    p_num = db_connect.run_query('SELECT count(*) FROM oa_admin')[0].get('count(*)')  # 获取当前员工总数
-    # 添加用户数据
+class TestRbac:
+    """测试rbac权限控制"""
+    mobile = "13" + random_str(9)
+    email = random_str(6) + "@gougucms.com"
     change_data = {
         # 员工基本信息
         "name": "赵启",                  # 员工姓名（必填）
-        "mobile": "13"+''.join(random_str()),         # 手机号码（必填，用于登录）
+        "mobile": mobile,         # 手机号码（必填，用于登录）
         "reg_pwd": "123456",
-        "email": random_str()+"@gougucms.com",    # 电子邮箱（必填）
+        "email": email,    # 电子邮箱（必填）
         "sex": str(choice([1,2])),                      # 员工性别：1-男，2-女（必填）
         "entry_time": "2026-08-15",      # 入职日期（必填，格式：YYYY-MM-DD）
 
@@ -48,16 +44,46 @@ def test_add_account(admin_api_login, db_connect):
         # 7-主部门顶级及子部门，8-次部门顶级及子部门，9-主次顶级及子部门，10-所有部门
     }
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" 
-        "(KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                      "(KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
         "X-Requested-With": "XMLHttpRequest"
     }
-    resp = admin_api_login.post(ADD_ACCOUNT_URL, data=change_data, headers=headers)
-    assert '没有权限' not in resp.json(), '操作失败'       # 显式排除失败页
-    res = resp.json()
-    print(res)
-    code = res.get('code')
-    msg = res.get('msg')
-    assert code == 0, '操作失败'
-    assert msg == '操作成功', f'操作失败, 当前信息: {msg}'
-    print(db_connect.run_query('SELECT * FROM oa_admin where username = "zhaoqi"'))
+
+    @staticmethod
+    def verify_success_response(response, expected_code=0, expected_msg='操作成功'):
+        """
+        验证接口返回的成功响应
+        :param response: requests.Response 对象
+        :param expected_code: 期望的 code 值，默认 0
+        :param expected_msg: 期望的 msg 值，默认 '操作成功'
+        """
+        assert response.status_code == 200, f"响应失败, 当前响应码为：{response.status_code}"
+        res = response.json()
+        code = res.get('code')
+        msg = res.get('msg')
+        assert code == expected_code, f'操作失败，code={code}, msg={msg}'
+        assert expected_msg in msg, f'操作失败，当前信息: {msg}'
+        print(res)   # 便于调试
+
+    @pytest.mark.rbac
+    def test_add_account_with_normal_user(self, normal_api_login, db_connect, logger):
+        """"使用普通用户权限添加用户or修改用户信息接口"""
+        db_connect.get_db_connection(
+            **DB
+        )
+        resp = normal_api_login.post(ADD_ACCOUNT_URL, data=self.change_data, headers=self.headers)
+        #验证
+        self.verify_success_response(resp, expected_code=405, expected_msg='没有权限')   # 验证接口返回的成功响应
+        logger.info("✅ 测试通过, 该用户无法修改用户信息")
+
+    @pytest.mark.rbac
+    def test_add_account_with_admin(self, admin_api_login, db_connect, logger):
+        """"使用管理员权限添加or修改用户信息接口"""
+        db_connect.get_db_connection(
+            **DB
+        )
+        # 添加用户数据
+        resp = admin_api_login.post(ADD_ACCOUNT_URL, data=self.change_data, headers=self.headers)
+        #验证
+        self.verify_success_response(resp)
+        logger.info("✅ 测试通过, 该用户可以修改用户信息")
