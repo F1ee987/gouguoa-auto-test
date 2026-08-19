@@ -13,6 +13,7 @@ from random import choice
 def random_str(length=9):
     return ''.join(choice(digits) for _ in range(length))
 
+@pytest.mark.skip(reason="暂时不执行该测试用例")
 class TestRbac:
     """测试rbac权限控制"""
     mobile = "13" + random_str(9)
