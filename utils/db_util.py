@@ -15,11 +15,12 @@ class DataBaseConnection:
     """
     数据库连接类，用于连接MySQL数据库并执行查询操作.
     """
-    def __init__(self) -> None:
+    def __init__(self, logger) -> None:
         """
         初始化数据库连接类.
         """
         self.conn: Optional[Connection] = None
+        self.logger = logger
 
     def get_db_connection(self, host: str, port: int, user: str, password: str, database: str, timeout: int = 5) -> Optional[Connection]:
         """
@@ -42,10 +43,10 @@ class DataBaseConnection:
                 cursorclass=pymysql.cursors.DictCursor,
                 connect_timeout=timeout
             )
-            print(f"✅ 数据库连接成功：主机>>{host}:{port}，数据库>>{database}")
+            self.logger.info(f"✅ 数据库连接成功")
             self.conn = connection
         except pymysql.MySQLError as e:
-            print(f"❌ 数据库连接失败：主机>>{host}:{port}，数据库>>{database}，错误详情：{e}")
+            self.logger.error(f"❌ 数据库连接失败，错误详情：{e}")
             return None
 
     def run_query(self, sql: str, check_size: int = 0) -> Any:
@@ -60,10 +61,10 @@ class DataBaseConnection:
                 with self.conn.cursor() as cursor:
                     cursor.execute(sql)
                     results = cursor.fetchmany(check_size) if check_size > 0 else cursor.fetchall()
-                    print(f"✅ SQL查询成功：{sql}，结果数量：{len(results) if results else 0}")
+                    self.logger.info(f"✅ SQL查询成功：{sql}，结果数量：{len(results) if results else 0}")
                     return results
             except pymysql.MySQLError as e:
-                print(f"❌ SQL查询失败：{sql}，错误详情：{e}")
+                self.logger.error(f"❌ SQL查询失败：{sql}，错误详情：{e}")
                 return None
         print("❌ 数据库连接未建立或连接失败。")
 
@@ -73,9 +74,9 @@ class DataBaseConnection:
         """
         if self.conn:
             self.conn.close()
-            print(f"✅ 数据库连接已关闭")
+            self.logger.info(f"✅ 数据库连接已关闭")
         else:
-            print("❌ 数据库连接未建立或已关闭。")
+            self.logger.error("❌ 数据库连接未建立或已关闭。")
 
 if __name__ == "__main__":
     # 测试数据库连接
