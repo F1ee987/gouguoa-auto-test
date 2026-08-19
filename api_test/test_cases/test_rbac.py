@@ -10,7 +10,7 @@ from config.conf import ADD_ACCOUNT_URL, DB
 from string import digits
 from random import choice
 
-def random_str(length=10):
+def random_str(length=9):
     return ''.join(choice(digits) for _ in range(length))
 
 @pytest.mark.rbac
@@ -24,14 +24,15 @@ def test_add_account(admin_api_login, db_connect):
     change_data = {
         # 员工基本信息
         "name": "赵启",                  # 员工姓名（必填）
-        "mobile": "1"+random_str(),         # 手机号码（必填，用于登录）
+        "mobile": "13"+''.join(random_str()),         # 手机号码（必填，用于登录）
+        "reg_pwd": "123456",
         "email": random_str()+"@gougucms.com",    # 电子邮箱（必填）
         "sex": str(choice([1,2])),                      # 员工性别：1-男，2-女（必填）
         "entry_time": "2026-08-15",      # 入职日期（必填，格式：YYYY-MM-DD）
 
         # 组织架构信息
         "did": str(choice([i for i in range(1,16)])),                      # 主部门ID（必填，对应部门表的ID）
-        "position_id": "4",              # 岗位职称ID（必填，对应岗位表的ID）
+        "position_id": str(choice([i for i in range(1,5)])),              # 岗位职称ID（必填，对应岗位表的ID）
         "department_ids": "",            # 次要部门ID（多个用逗号分隔，可为空）
         "pid": "0",                      # 上级主管ID（0表示无上级）
 
@@ -45,9 +46,6 @@ def test_add_account(admin_api_login, db_connect):
         # 0-仅自己，1-主部门，2-次部门，3-主次部门，
         # 4-主部门及子部门，5-次部门及子部门，6-主次部门及子部门，
         # 7-主部门顶级及子部门，8-次部门顶级及子部门，9-主次顶级及子部门，10-所有部门
-
-        # 关键标识
-        'id': p_num+1                    # 员工ID（必填，用于指定修改哪个员工）
     }
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" 
@@ -62,4 +60,4 @@ def test_add_account(admin_api_login, db_connect):
     msg = res.get('msg')
     assert code == 0, '操作失败'
     assert msg == '操作成功', f'操作失败, 当前信息: {msg}'
-    print(db_connect.run_query('SELECT * FROM oa_admin where username = "zhaoqi"')[0])
+    print(db_connect.run_query('SELECT * FROM oa_admin where username = "zhaoqi"'))
