@@ -140,7 +140,7 @@ def try_brute_force_captcha(username, password):
 @pytest.mark.api
 @pytest.mark.login
 @pytest.mark.parametrize("username,password,expected_code", prepare_account())
-def test_by_orc_captcha(username, password, expected_code):
+def test_by_orc_captcha(username, password, expected_code, logger):
     """OCR 解码验证码, 并登录"""
     solve = CaptchaSolver()
     session = RequestHandle(True)
@@ -151,7 +151,7 @@ def test_by_orc_captcha(username, password, expected_code):
     captcha_text = solve.ocr_captcha_image(captcha_img)
     cleaned =solve.clean_captcha_text(captcha_text)
     captcha_num = solve.calc_captcha(cleaned) #计算结果
-    print(f"OCR 解码验证码: {cleaned}, 解码结果: {captcha_num}")
+    logger.info(f"OCR 解码验证码: {cleaned}, 解码结果: {captcha_num}")
 
     """使用解码后的验证码登录"""
     login_data = {
@@ -161,16 +161,16 @@ def test_by_orc_captcha(username, password, expected_code):
     }
     login_res = session.post(url=LOGIN_URL, data=login_data)
 
-    assert login_res.status_code == 200, f"响应请求错误, 当前响应码为>>{login_res.status_code}"
+    assert login_res.status_code == 200, logger.error(f"响应请求错误, 当前响应码为>>{login_res.status_code}")
 
     try:
         response_data = login_res.json()
         actual_code = response_data.get('code')
-        assert actual_code != expected_code, (
+        assert actual_code != expected_code, logger.error(
             f"预期失败，期望状态码为: {expected_code}，实际为: {actual_code}"
         )
-        print(f"✅ 登录信息：{response_data.get('msg')}")
+        logger.info(f"✅ 登录信息：{response_data.get('msg')}")
     except ValueError:
-        print("响应内容不是有效的 JSON 格式，无法解析。")
+        logger.error("响应内容不是有效的 JSON 格式，无法解析。")
     finally:
         session.close()
