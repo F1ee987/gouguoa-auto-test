@@ -9,11 +9,11 @@ from pathlib import Path
 
 #URL信息
 BASE_URL = "http://192.168.198.133:81"  # 基础URL
-LOGIN_URL = f"{BASE_URL}/home/login/login_submit"
-ADD_ACCOUNT_URL = f"{BASE_URL}/user/user/add"
-LOGIN_TIP_LOC = ("XPASS", '//*[@id="layui-layer8"]')
-EDIT_PERSONAL = f"{BASE_URL}/home/index/edit_personal"
-FILE_UPLOAD = f"{BASE_URL}/api/index/upload"
+LOGIN_URL = f"{BASE_URL}/home/login/login_submit" # 登录URL
+ADD_ACCOUNT_URL = f"{BASE_URL}/user/user/add" # 添加or修改账号
+EDIT_PERSONAL = f"{BASE_URL}/home/index/edit_personal" # 编辑个人信息
+FILE_UPLOAD = f"{BASE_URL}/api/index/upload" # 文件上传
+SUBMIT_CHECK = f"{BASE_URL}/api/check/submit_check" # 提交审核
 
 #数据库配置
 DB = {
