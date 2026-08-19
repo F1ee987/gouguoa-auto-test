@@ -5,9 +5,10 @@
 @Author :zhousha
 @Date   :2026/8/19 15:56
 """
-from config.conf import SUBMIT_CHECK
+from config.conf import SUBMIT_CHECK, APPROVE_URL
 from datetime import datetime
 from random import choice
+import pytest
 
 class TestLeaveApprovalFlow:
     """请假审批全流程"""
@@ -22,15 +23,38 @@ class TestLeaveApprovalFlow:
         "id": 0,
         "flow_id": 1,
         "action_id": 1,
-        "check_uames": "赵启",
-        "check_uids": 22,
+        "check_uames": "超级员工",
+        "check_uids": 1,
         "check_name": "leaves"
     }
 
-    def test_staff_apply(self, normal_api_login):
-        """员工申请"""
-        normal_api_login.post(SUBMIT_CHECK,data=self.submit_data)
+    approve_data = {
+        'action_id': '1',
+        'check_name': 'leaves',
+        'check_flow_id': '1',
+        'check_node': '1',
+        'check_uids': '',
+        'check': '1',
+        'check_files': '',
+        'content': '通过'
+    }
 
-    def test_manager_approve(self, admin_api_login):
+    header = {
+        "X-Requested-With": "XMLHttpRequest",
+        "User-Agent": "Mozilla/5.0 Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+    }
+
+    def test_staff_apply(self, normal_api_login, logger):
+        """员工申请"""
+        resp = normal_api_login.post(SUBMIT_CHECK,data=self.submit_data)
+
+        assert resp.status_code == 200, logger.error(f"员工提交请假申请失败，响应状态码: {resp.status_code}")
+        assert resp.json().get('code') == 0, logger.error(f"员工提交请假申请失败，响应内容: {resp.json()}")
+        logger.info(f"✅ 员工提交请假申请成功")
+
+    def test_manager_approve(self, admin_api_login, logger):
         """经理审批"""
-        admin_api_login.post(SUBMIT_CHECK)
+        resp = admin_api_login.post(APPROVE_URL,data=self.approve_data,headers=self.header)
+        assert resp.status_code == 200, logger.error(f"经理审批请假申请失败，响应状态码: {resp.status_code}")
+        assert resp.json().get('code') == 0, logger.error(f"经理审批请假申请失败，响应内容: {resp.json()}")
+        logger.info(f"✅ 经理审批请假申请成功")
