@@ -65,9 +65,10 @@ class TestRbac:
         assert expected_msg in msg, f'操作失败，当前信息: {msg}'
         print(res)   # 便于调试
 
+    @pytest.mark.auth
     @pytest.mark.rbac
     def test_add_account_with_normal_user(self, normal_api_login, db_connect, logger):
-        """"使用普通用户权限添加用户or修改用户信息接口"""
+        """"使用普通用户权限添加用户or修改用户信息接口, 预期返回405状态码"""
         db_connect.get_db_connection(
             **DB
         )
@@ -76,6 +77,7 @@ class TestRbac:
         self.verify_success_response(resp, expected_code=405, expected_msg='没有权限')   # 验证接口返回的成功响应
         logger.info("✅ 测试通过, 该用户无法修改用户信息")
 
+    @pytest.mark.auth
     @pytest.mark.rbac
     def test_add_account_with_admin(self, admin_api_login, db_connect, logger):
         """"使用管理员权限添加or修改用户信息接口"""

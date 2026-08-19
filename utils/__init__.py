@@ -5,7 +5,7 @@
 @Author :zhousha
 @Date   :2026/8/14 15:07
 """
-from .captcha import CaptchaSolver
+from .captcha_solver import CaptchaSolver
 from .file_reader import Reader
 from .logger import Logger
 from .db_util import DataBaseConnection

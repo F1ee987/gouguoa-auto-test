@@ -1,6 +1,6 @@
 """
 @Project:gouguoa-auto-test
-@File   :captcha.py
+@File   :captcha_solver.py
 @IDE    :PyCharm
 @Author :zhousha
 @Date   :2026/7/23 14:10
