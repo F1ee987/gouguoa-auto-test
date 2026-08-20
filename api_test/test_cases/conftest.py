@@ -5,19 +5,19 @@
 @Author :zhousha
 @Date   :2026/7/23 15:01
 """
-from typing import Generator, Any, Dict
+from typing import Generator, Dict
 import pytest
 from config.conf import HOME, LOGIN_URL, CAPTCHA_URL
-from utils import Reader, CaptchaSolver, DataBaseConnection, RequestHandle
+from utils import Reader, CaptchaSolver, DataBaseConnection, RequestHandle, Logger
 
 @pytest.fixture(scope='session')
-def db_connect(logger: Any) -> Generator[DataBaseConnection]:
+def db_connect(logger: Logger) -> Generator[DataBaseConnection]:
     conn = DataBaseConnection(logger)
     yield conn
     conn.close()
 
 # ---------- 私有辅助函数 ----------
-def _login_session(csv_row_index: int, logger: Any) -> RequestHandle:
+def _login_session(csv_row_index: int, logger: Logger) -> RequestHandle:
     """
     通用登录函数：读取 CSV 指定行的账号密码，识别验证码并登录，返回会话对象
     :param csv_row_index: CSV 文件中的行索引（0-based）
@@ -55,7 +55,7 @@ def _login_session(csv_row_index: int, logger: Any) -> RequestHandle:
 # ---------- 公开 Fixture ----------
 
 @pytest.fixture(scope='function')
-def normal_api_login(logger: Any) -> Generator[RequestHandle, None, None]:
+def normal_api_login(logger: Logger) -> Generator[RequestHandle, None, None]:
     """
     使用普通员工用户登录（CSV 第5行，索引4）
     """
@@ -66,7 +66,7 @@ def normal_api_login(logger: Any) -> Generator[RequestHandle, None, None]:
 
 
 @pytest.fixture(scope='function')
-def admin_api_login(logger: Any) -> Generator[RequestHandle, None, None]:
+def admin_api_login(logger: Logger) -> Generator[RequestHandle, None, None]:
     """
     使用管理员用户登录（CSV 第2行，索引1）
     """
