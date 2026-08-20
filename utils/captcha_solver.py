@@ -5,10 +5,11 @@
 @Author :zhousha
 @Date   :2026/7/23 14:10
 """
-
+from datetime import datetime
 import re
 import ddddocr
 from utils.logger import Logger
+from config.conf import HOME
 from typing import Any
 
 logger = Logger(__name__)
@@ -76,6 +77,9 @@ class CaptchaSolver:
         result = a + b
         if result > 40:
             logger.warning(f"计算结果 {result} 超出预期范围，可能存在识别偏差")
+            err_img = f"{HOME}/docs/error_img{datetime.now().strftime('%Y%m%d%H%M%S')}.png"
+            with open(err_img, 'w') as f:
+                f.write(err_img)
 
         logger.info(f"验证码计算结果: {a} + {b} = {result}")
         return result
