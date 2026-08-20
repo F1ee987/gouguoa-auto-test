@@ -8,9 +8,11 @@
 import pytest
 from config.conf import ADD_ACCOUNT_URL, DB
 from string import digits
+from requests import Response
 from random import choice
+from utils import RequestHandle, DataBaseConnection, Logger
 
-def random_str(length=9):
+def random_str(length: int =9):
     return ''.join(choice(digits) for _ in range(length))
 
 @pytest.mark.skip(reason="暂时不执行该测试用例")
@@ -51,7 +53,7 @@ class TestRbac:
     }
 
     @staticmethod
-    def verify_success_response(response, expected_code=0, expected_msg='操作成功'):
+    def verify_success_response(response: Response, expected_code: int = 0, expected_msg: str = '操作成功'):
         """
         验证接口返回的成功响应
         :param response: requests.Response 对象
@@ -68,7 +70,7 @@ class TestRbac:
 
     @pytest.mark.auth
     @pytest.mark.rbac
-    def test_add_account_with_normal_user(self, normal_api_login, db_connect, logger):
+    def test_add_account_with_normal_user(self, normal_api_login: RequestHandle, db_connect: DataBaseConnection, logger: Logger):
         """"使用普通用户权限添加用户or修改用户信息接口, 预期返回405状态码"""
         db_connect.get_db_connection(
             **DB
@@ -80,7 +82,7 @@ class TestRbac:
 
     @pytest.mark.auth
     @pytest.mark.rbac
-    def test_add_account_with_admin(self, admin_api_login, db_connect, logger):
+    def test_add_account_with_admin(self, admin_api_login: RequestHandle, db_connect: DataBaseConnection, logger: Logger):
         """"使用管理员权限添加or修改用户信息接口"""
         db_connect.get_db_connection(
             **DB

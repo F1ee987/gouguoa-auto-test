@@ -5,20 +5,19 @@
 @Author :zhousha
 @Date   :2026/7/23 15:01
 """
-from typing import Generator
+from typing import Generator, Any, Dict
 import pytest
-from time import time
-from config.conf import HOME, LOGIN_URL, BASE_URL
+from config.conf import HOME, LOGIN_URL, CAPTCHA_URL
 from utils import Reader, CaptchaSolver, DataBaseConnection, RequestHandle
 
 @pytest.fixture(scope='session')
-def db_connect(logger) -> Generator[DataBaseConnection]:
+def db_connect(logger: Any) -> Generator[DataBaseConnection]:
     conn = DataBaseConnection(logger)
     yield conn
     conn.close()
 
 # ---------- 私有辅助函数 ----------
-def _login_session(csv_row_index: int, logger) -> RequestHandle:
+def _login_session(csv_row_index: int, logger: Any) -> RequestHandle:
     """
     通用登录函数：读取 CSV 指定行的账号密码，识别验证码并登录，返回会话对象
     :param csv_row_index: CSV 文件中的行索引（0-based）
@@ -33,19 +32,16 @@ def _login_session(csv_row_index: int, logger) -> RequestHandle:
     account_data = reader.read_csv(f"{HOME}/config/accounts.csv")[csv_row_index]
 
     # 获取验证码图片
-    captcha_url = f"{BASE_URL}/captcha.html?t={int(time() * 1000)}"
-    res = sess.get(captcha_url, timeout=5)
+    res = sess.get(CAPTCHA_URL, timeout=5)
     img_path = f"{HOME}/utils/captcha_temp.png"
     with open(img_path, 'wb') as f:
         f.write(res.content)
 
     # 识别验证码
-    ocr_text = capt.ocr_captcha_image(img_path)
-    cleaned_text = capt.clean_captcha_text(ocr_text)
-    captcha_value = capt.calc_captcha(cleaned_text)
+    captcha_value = capt.solve(img_path)
 
     # 构造登录请求
-    login_data = {
+    login_data: Dict[str, str|int]= {
         'username': account_data[1],
         'password': account_data[2],
         'captcha': captcha_value,
@@ -59,7 +55,7 @@ def _login_session(csv_row_index: int, logger) -> RequestHandle:
 # ---------- 公开 Fixture ----------
 
 @pytest.fixture(scope='function')
-def normal_api_login(logger) -> Generator[RequestHandle, None, None]:
+def normal_api_login(logger: Any) -> Generator[RequestHandle, None, None]:
     """
     使用普通员工用户登录（CSV 第5行，索引4）
     """
@@ -70,7 +66,7 @@ def normal_api_login(logger) -> Generator[RequestHandle, None, None]:
 
 
 @pytest.fixture(scope='function')
-def admin_api_login(logger) -> Generator[RequestHandle, None, None]:
+def admin_api_login(logger: Any) -> Generator[RequestHandle, None, None]:
     """
     使用管理员用户登录（CSV 第2行，索引1）
     """

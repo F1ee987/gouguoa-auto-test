@@ -8,21 +8,22 @@
 import pytest
 import requests
 import time
-from config.conf import BASE_URL, LOGIN_URL, HOME
+from config.conf import BASE_URL, LOGIN_URL, HOME, CAPTCHA_URL
 from utils import Reader, CaptchaSolver, RequestHandle
+from typing import List, Tuple, Any
 
-def get_test_accounts():
+def get_test_accounts() -> List[List[str]]:
     """读取accounts.csv文件返回测试账号数据"""
     reader = Reader()
     return reader.read_csv(f'{HOME}/config/accounts.csv')
 
-def prepare_account():
+def prepare_account() -> List[Tuple[str, str, str]]:
     """准备测试所需的账号信息"""
     accounts = get_test_accounts()
     if not accounts:
         pytest.skip("未读取到测试账号")
 
-    test_data = []
+    test_data: List[Tuple[str, str, str]] = []
     for account in accounts[1:]:
         test_account = account
         username = test_account[1]
@@ -36,7 +37,7 @@ def prepare_account():
 
     return test_data
 
-def try_brute_force_captcha(username, password):
+def try_brute_force_captcha(username: str, password: str):
     """尝试暴力破解验证码（增强版）"""
     from requests.adapters import HTTPAdapter
     from urllib3.util.retry import Retry
@@ -82,7 +83,7 @@ def try_brute_force_captcha(username, password):
 
         # 获取新验证码（注意：这里可能也需要重试，但 Retry 已全局配置）
         try:
-            session.get(f"{BASE_URL}/captcha.html?t={int(time.time()*1000)}", timeout=5)
+            session.get(CAPTCHA_URL, timeout=5)
         except Exception as e:
             print(f"⚠️ 获取验证码失败: {e}，跳过 {answer}")
             continue
@@ -140,18 +141,17 @@ def try_brute_force_captcha(username, password):
 @pytest.mark.api
 @pytest.mark.login
 @pytest.mark.parametrize("username,password,expected_code", prepare_account())
-def test_by_orc_captcha(username, password, expected_code, logger):
+def test_by_orc_captcha(username: str, password: str, expected_code: str, logger: Any):
     """OCR 解码验证码, 并登录"""
     solve = CaptchaSolver()
     session = RequestHandle(True)
-    captcha_res = session.get(f"{BASE_URL}/captcha.html?t={int(time.time()*1000)}", timeout=5)
+    captcha_res = session.get(CAPTCHA_URL, timeout=5)
     captcha_img = f"{HOME}/api_test/data/captcha_data/captcha_{username}.png"
     with open(captcha_img, 'wb') as f:
         f.write(captcha_res.content)
-    captcha_text = solve.ocr_captcha_image(captcha_img)
-    cleaned =solve.clean_captcha_text(captcha_text)
-    captcha_num = solve.calc_captcha(cleaned) #计算结果
-    logger.info(f"OCR 解码验证码: {cleaned}, 解码结果: {captcha_num}")
+    #计算结果
+    captcha_num = solve.solve(captcha_img)
+    logger.info(f"OCR 解码验证码: {captcha_num}")
 
     """使用解码后的验证码登录"""
     login_data = {

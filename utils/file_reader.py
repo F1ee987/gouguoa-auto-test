@@ -8,10 +8,11 @@
 import csv
 import yaml
 import json
+from typing import List, Any
 
 class Reader:
     @staticmethod
-    def read_csv(file_path):
+    def read_csv(file_path: str) -> List[List[str]]:
         """
         读取csv文件
         :param file_path: 文件路径
@@ -19,13 +20,13 @@ class Reader:
         """
         with open(file_path, mode='r', encoding='utf-8') as file:
             reader = csv.reader(file)
-            load_data = []
+            load_data: List[List[str]] = []
             for row in reader:
                 load_data.append(row)
             return load_data
 
     @staticmethod
-    def read_yaml(file_path):
+    def read_yaml(file_path: str) -> Any:
         """
         读取yaml文件
         :param file_path: 文件路径
@@ -36,7 +37,7 @@ class Reader:
             return load_data
 
     @staticmethod
-    def read_json(file_path):
+    def read_json(file_path: str) -> Any:
         """
         读取json文件
         :param file_path: 文件路径

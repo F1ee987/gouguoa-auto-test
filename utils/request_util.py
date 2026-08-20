@@ -6,7 +6,7 @@
 @Date   :2026/8/18 14:26
 """
 import requests
-from typing import Optional
+from typing import Optional, Any
 
 class RequestHandle:
     """请求操作类"""
@@ -18,7 +18,7 @@ class RequestHandle:
             requests.Session() if use_session else None
         )
 
-    def __request(self, method: str, url: str, **kwargs) -> requests.Response:
+    def __request(self, method: str, url: str, **kwargs: Any) -> requests.Response:
         """
         发送请求,
         如果使用了 Session，则使用 Session 发送请求，否则直接使用 requests 发送请求
@@ -27,11 +27,11 @@ class RequestHandle:
             return self.session.request(method=method, url=url, **kwargs)
         return requests.request(method=method, url=url, **kwargs)
 
-    def get(self, url: str, **kwargs) -> requests.Response:
+    def get(self, url: str, **kwargs: Any) -> requests.Response:
         """发送 GET 请求"""
         return self.__request(method='GET', url=url, **kwargs)
 
-    def post(self, url: str, **kwargs) -> requests.Response:
+    def post(self, url: str, **kwargs: Any) -> requests.Response:
         """发送 POST 请求"""
         return self.__request('POST', url, **kwargs)
 

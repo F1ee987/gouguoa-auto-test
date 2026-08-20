@@ -7,9 +7,10 @@
 """
 import pytest
 from config.conf import FILE_UPLOAD, HOME
-from utils import Reader
+from utils import Reader, RequestHandle, Logger
+from typing import List, Tuple
 
-def load_upload_test_data():
+def load_upload_test_data() -> List[Tuple[str, str, str]]:
     """读取上传文件的csv文件"""
     print("开始读取上传文件的csv文件")
     r = Reader()
@@ -18,7 +19,7 @@ def load_upload_test_data():
     result = r.read_csv(filepath)
     if not result:
         pytest.skip("上传文件的csv文件不存在")
-    data = []
+    data: List[Tuple[str, str, str]] = []
     for row in result[1:]:
         if len(row) < 3:
             print(f"⚠ 跳过字段不完整的数据行：{row}")
@@ -33,7 +34,7 @@ def load_upload_test_data():
     return data
 
 @pytest.mark.parametrize("filetype, path, expected", load_upload_test_data())
-def test_upload(filetype, path, expected, admin_api_login, logger):
+def test_upload(filetype: str, path: str, expected: str, admin_api_login: RequestHandle, logger: Logger):
     with open(f'{str(HOME)+path}', 'rb') as f:
         upload_res = admin_api_login.post(
             FILE_UPLOAD,

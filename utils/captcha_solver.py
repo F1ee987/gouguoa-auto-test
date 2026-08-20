@@ -6,77 +6,81 @@
 @Date   :2026/7/23 14:10
 """
 
+import re
 import ddddocr
-import string
 from utils.logger import Logger
+from typing import Any
 
 logger = Logger(__file__)
 
-class CaptchaSolver:
-    """
-    验证码识别与计算器
-    集成 OCR 识别、字符清洗、算式计算功能
-    """
-    @staticmethod
-    def ocr_captcha_image(img_path: str) -> str:
-        """orc识别验证码"""
-        orc = ddddocr.DdddOcr(show_ad=False)
-        with open(img_path, mode='rb') as f:
-            img_bytes = f.read()
-        captcha_text = orc.classification(img_bytes)
-        print(f"识别内容：{captcha_text}")
-        return captcha_text
 
-    @staticmethod
-    def clean_captcha_text(raw_text: str) -> str:
+class CaptchaSolver:
+    """验证码识别与计算器（仅支持加法算式）"""
+
+    REPLACE_MAP = {
+        '>': '7', 'q': '9', 'o': '0', ']': '1',
+        'z': '2', 'I': '1', 'g': '9', '十': '+'
+    }
+
+    def __init__(self):
+        self._ocr = ddddocr.DdddOcr(show_ad=False)
+
+    def solve(self, img_path: str) -> int:
+        """一键识别验证码并返回计算结果"""
+        raw = self._recognize(img_path)
+        cleaned = self._clean(raw)
+        return self._calc(cleaned)
+
+    def _recognize(self, img_path: str) -> Any:
+        with open(img_path, 'rb') as f:
+            text = self._ocr.classification(f.read())
+        logger.info(f"OCR 识别结果: {text}")
+        return text
+
+    def _clean(self, raw: str) -> str:
+        """数据清洗
+
+        Args:
+            raw (str): 待清洗的OCR识别结果
+
+        Raises:
+            ValueError: OCR 识别为空
+
+        Returns:
+            str: 清洗后的表达式
         """
-        清洗 OCR 识别后的验证码文本：
-        - 替换常见混淆字符（数字、运算符）
-        - 移除所有空白字符
-        - 返回可用于计算的干净表达式
-        """
-        if not raw_text:
-            return ""
-        from re import sub
-        replace_map = {
-            '>': '7',
-            'q': '9',
-            'o': '0',
-            ']': '1',
-            'z': '2',
-            'I': '1',
-            'g': '9',
-            '十': '+'
-        }
-        trans_table = str.maketrans(replace_map)
-        text = raw_text.translate(trans_table)
-        cleaned = sub(r'\s+', '', text)
-        print(f"清洗结果>>{cleaned}")
+        if not raw:
+            raise ValueError("OCR 识别为空")
+        cleaned = raw.translate(str.maketrans(self.REPLACE_MAP))
+        cleaned = re.sub(r'\s+', '', cleaned)
+        logger.info(f"清洗后表达式: {cleaned}")
         return cleaned
 
-    @staticmethod
-    def calc_captcha(cleaned: str) -> int:
-        """根据识别的算式计算结果 v5版本"""
-        first_num_len = 0
-        for c in cleaned:
-            if c not in string.digits:
-                break
-            first_num_len += 1
-        first_operand, second_operand = int(cleaned[:first_num_len]), int(cleaned[first_num_len+1:])
-        result = first_operand + second_operand
+    def _calc(self, expr: str) -> int:
+        """计算表达式结果（仅支持加法）"""
+        # 找到 '+' 的位置
+        idx = expr.find('+')
+        if idx == -1:
+            raise ValueError(f"表达式中未找到 '+' 号: {expr}")
+
+        a = int(expr[:idx])
+        b = int(expr[idx + 1:])
+
+        # 特殊处理：OCR 把数字识别过大时的修正
+        if a > 70:
+            a -= 50
+        if b > 70:
+            b -= 50
+
+        result = a + b
         if result > 40:
-            logger.warning('ValueError("⚠️计算结果超出验证码范围")')
-            print("识别结果超出验证码范围，重新识别验证码....")
-            if first_operand >= 70:
-                first_operand = first_operand - 50
-            elif second_operand >= 70:
-                second_operand = second_operand - 50
-            result = first_operand + second_operand
-        logger.info("验证码识别成功")
+            logger.warning(f"计算结果 {result} 超出预期范围，可能存在识别偏差")
+
+        logger.info(f"验证码计算结果: {a} + {b} = {result}")
         return result
 
 if __name__ == '__main__':
     solve = CaptchaSolver()
-    r = solve.ocr_captcha_image('captcha_temp.png')
+    r = solve.solve('captcha_temp.png')
 
-    print(solve.calc_captcha(solve.clean_captcha_text(r)))
+    print(r)

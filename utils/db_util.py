@@ -15,18 +15,18 @@ class DataBaseConnection:
     """
     数据库连接类，用于连接MySQL数据库并执行查询操作.
     """
-    def __init__(self, logger) -> None:
+    def __init__(self, logger: Any) -> None:
         """
         初始化数据库连接类.
         """
         self.conn: Optional[Connection] = None
         self.logger = logger
 
-    def get_db_connection(self, host: str, port: int, user: str, password: str, database: str, timeout: int = 5) -> Optional[Connection]:
+    def get_db_connection(self, host: str, port: str|int, user: str, password: str, database: str, timeout: int = 5) -> Optional[Connection]:
         """
         连接MySQL数据库.
-        :param port:
-        :param host:
+        :param port: 数据库端口号.
+        :param host: 数据库主机地址.
         :param user: 用户名.
         :param password: 密码.
         :param database: 数据库名称.
@@ -39,7 +39,7 @@ class DataBaseConnection:
                 user=user,
                 password=password,
                 database=database,
-                port=port,
+                port=int(port),
                 cursorclass=pymysql.cursors.DictCursor,
                 connect_timeout=timeout
             )
@@ -81,7 +81,9 @@ class DataBaseConnection:
 if __name__ == "__main__":
     # 测试数据库连接
     from config.conf import DB
-    db_conn = DataBaseConnection()
+    from utils import Logger
+    logger = Logger(__file__)
+    db_conn = DataBaseConnection(logger)
     conn = db_conn.get_db_connection(**DB)
     print(db_conn.run_query('SELECT count(username) FROM oa_admin'))
     db_conn.close()
