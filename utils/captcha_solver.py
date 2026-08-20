@@ -11,7 +11,7 @@ import ddddocr
 from utils.logger import Logger
 from typing import Any
 
-logger = Logger(__file__)
+logger = Logger(__name__)
 
 
 class CaptchaSolver:
