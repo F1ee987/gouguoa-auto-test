@@ -50,9 +50,18 @@ def normal_api_login(logger: Logger,
     """
     sess = _login_session(csv_row_index=4, logger=logger, captcha_text=captcha_text)   # 普通员工所在行
     yield sess
-    print("✔关闭连接...")
     sess.close()
 
+@pytest.fixture(scope='function')
+def hr_api_login(logger: Logger,
+                    captcha_text: Tuple[int, RequestHandle]
+                    ) -> Generator[RequestHandle]:
+    """
+    使用人力资源用户登录（CSV 第3行，索引2）
+    """
+    sess = _login_session(csv_row_index=2, logger=logger, captcha_text=captcha_text)   # 人力资源所在行
+    yield sess
+    sess.close()
 
 @pytest.fixture(scope='function')
 def admin_api_login(logger: Logger,
@@ -63,11 +72,13 @@ def admin_api_login(logger: Logger,
     """
     sess = _login_session(csv_row_index=1, logger=logger, captcha_text=captcha_text)   # 管理员所在行
     yield sess
-    print("✔关闭连接...")
     sess.close()
 
 @pytest.fixture(scope='session')
 def db_connect(logger: Logger) -> Generator[DataBaseConnection]:
+    """
+    数据库连接
+    """
     conn = DataBaseConnection(logger)
     yield conn
     conn.close()
