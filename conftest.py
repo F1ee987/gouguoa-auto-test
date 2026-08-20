@@ -29,7 +29,7 @@ def logger() -> Generator[Logger]:
 def captcha_text() -> Generator[Tuple[int, RequestHandle]]:
     """获取验证码文本"""
     solver = CaptchaSolver()
-    session = RequestHandle()
+    session = RequestHandle(True)
     captcha_res = session.get(CAPTCHA_URL, timeout=5)
     captcha_path = f"{HOME}/utils/captcha_temp.png"
     with open(captcha_path, "wb") as f:
