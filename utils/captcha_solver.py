@@ -14,7 +14,6 @@ from typing import Any
 
 logger = Logger(__name__)
 
-
 class CaptchaSolver:
     """验证码识别与计算器（仅支持加法算式）"""
 
@@ -87,5 +86,4 @@ class CaptchaSolver:
 if __name__ == '__main__':
     solve = CaptchaSolver()
     r = solve.solve('captcha_temp.png')
-
     print(r)
