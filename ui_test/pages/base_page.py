@@ -31,6 +31,11 @@ class BasePage:
         if not self._driver:
             raise ValueError("浏览器驱动未初始化，请确保在创建BasePage实例时传入有效的WebDriver对象。")
 
+    def title(self) -> str:
+        """获取当前页面标题"""
+        self._verify_driver()
+        return self._driver.title
+
     def add_options(self, options: Optional[Options]) -> None:
         """添加浏览器选项
 
@@ -48,7 +53,8 @@ class BasePage:
         self._verify_driver()
         self._driver.get(url)
 
-    def force_wait(self, seconds: int) -> None:
+    @staticmethod
+    def force_wait(seconds: int) -> None:
         """强制等待指定的秒数
 
         Args:
