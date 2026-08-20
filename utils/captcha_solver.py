@@ -56,7 +56,8 @@ class CaptchaSolver:
         logger.info(f"清洗后表达式: {cleaned}")
         return cleaned
 
-    def _calc(self, expr: str) -> int:
+    @staticmethod
+    def _calc(expr: str) -> int:
         """计算表达式结果（仅支持加法）"""
         # 找到 '+' 的位置
         idx = expr.find('+')
