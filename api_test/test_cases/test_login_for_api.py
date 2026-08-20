@@ -9,33 +9,36 @@ import pytest
 import requests
 import time
 from config.conf import BASE_URL, LOGIN_URL, HOME, CAPTCHA_URL
-from utils import Reader, CaptchaSolver, RequestHandle
-from typing import List, Tuple, Any
+from utils import Reader, CaptchaSolver, RequestHandle, Logger
+from typing import List, Tuple
 
 def get_test_accounts() -> List[List[str]]:
     """读取accounts.csv文件返回测试账号数据"""
     reader = Reader()
     return reader.read_csv(f'{HOME}/config/accounts.csv')
 
-def prepare_account() -> List[Tuple[str, str, str]]:
+def prepare_account() -> Tuple[List[Tuple[str, str, str]], List[str]]:
     """准备测试所需的账号信息"""
     accounts = get_test_accounts()
     if not accounts:
         pytest.skip("未读取到测试账号")
 
     test_data: List[Tuple[str, str, str]] = []
+    test_ids: List[str] = []
     for account in accounts[1:]:
         test_account = account
         username = test_account[1]
         password = test_account[2]
         expected_code = test_account[3]
+        describe = test_account[4]
         print(f"🚀 加载测试账号: {username}")
         test_data.append((username, password, expected_code))
+        test_ids.append(describe)
 
-    if not test_data:
+    if not test_data and not test_ids:
         pytest.skip("没有有效的测试账号")
 
-    return test_data
+    return test_data, test_ids
 
 def try_brute_force_captcha(username: str, password: str):
     """尝试暴力破解验证码（增强版）"""
@@ -138,10 +141,12 @@ def try_brute_force_captcha(username: str, password: str):
 #     """暴力破解验证码, 已知验证码范围"""
 #     try_brute_force_captcha(username, password)
 
+TEST_DATA, TEST_IDS = prepare_account()
+
 @pytest.mark.api
 @pytest.mark.login
-@pytest.mark.parametrize("username,password,expected_code", prepare_account())
-def test_by_orc_captcha(username: str, password: str, expected_code: str, logger: Any):
+@pytest.mark.parametrize("username,password,expected_code", TEST_DATA, ids=TEST_IDS)
+def test_by_orc_captcha(username: str, password: str, expected_code: str, logger: Logger):
     """OCR 解码验证码, 并登录"""
     solve = CaptchaSolver()
     session = RequestHandle(True)
