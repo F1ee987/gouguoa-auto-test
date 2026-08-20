@@ -1,5 +1,5 @@
-file_type,path,	expected_result
-pdf,/api_test/data/upload_data/pdf.pdf,0
-csv,/api_test/data/upload_data/upload.csv,1
-txt,/api_test/data/upload_data/upload.txt,0
-png,/api_test/data/upload_data/upload.png,0
+file_type,path,	expected_result, description
+pdf,/api_test/data/upload_data/pdf.pdf,0, pdf格式文件上传成功
+csv,/api_test/data/upload_data/upload.csv,1, 不支持的csv格式文件上传失败
+txt,/api_test/data/upload_data/upload.txt,0, txt格式文件上传成功
+png,/api_test/data/upload_data/upload.png,0, png格式文件上传成功

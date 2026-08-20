@@ -10,7 +10,7 @@ from config.conf import FILE_UPLOAD, HOME
 from utils import Reader, RequestHandle, Logger
 from typing import List, Tuple
 
-def load_upload_test_data() -> List[Tuple[str, str, str]]:
+def load_upload_test_data() -> Tuple[List[Tuple[str, str, str]], List[str]]:
     """读取上传文件的csv文件"""
     print("开始读取上传文件的csv文件")
     r = Reader()
@@ -20,20 +20,25 @@ def load_upload_test_data() -> List[Tuple[str, str, str]]:
     if not result:
         pytest.skip("上传文件的csv文件不存在")
     data: List[Tuple[str, str, str]] = []
+    ids: List[str] = []
     for row in result[1:]:
-        if len(row) < 3:
+        if len(row) < 4:
             print(f"⚠ 跳过字段不完整的数据行：{row}")
             continue
 
         data.append((row[0], row[1], row[2]))
+        ids.append(row[3])
         print(f"✅ 加载测试数据：{row}")
 
-    if not data:
+    if not data and not ids:
         pytest.skip("没有有效的测试数据")
 
-    return data
+    return data, ids
 
-@pytest.mark.parametrize("filetype, path, expected", load_upload_test_data())
+TEST_DATA, TEST_IDS = load_upload_test_data()
+
+@pytest.mark.upload
+@pytest.mark.parametrize("filetype, path, expected", TEST_DATA, ids=TEST_IDS)
 def test_upload(filetype: str, path: str, expected: str, admin_api_login: RequestHandle, logger: Logger):
     with open(f'{str(HOME)+path}', 'rb') as f:
         upload_res = admin_api_login.post(
@@ -48,5 +53,8 @@ def test_upload(filetype: str, path: str, expected: str, admin_api_login: Reques
 
     code = upload_json.get('code')
     msg = upload_json.get('msg', '')
-    assert str(code) == expected, f'上传失败, 当前状态：{msg}'
-    logger.info(f"✅ 上传文件成功，状态码：{code}, 消息：{msg}")
+    try:
+        assert str(code) == expected, f'预期结果：{expected}, 实际结果：{code}, 消息：{msg}'
+        logger.info(f"✅ 测试文件上传功能成功，状态码：{code}, 消息：{msg}")
+    except AssertionError as e:
+        logger.error(f"测试文件上传功能失败，状态码：{code}, 消息：{msg}, 错误信息：{e}")
