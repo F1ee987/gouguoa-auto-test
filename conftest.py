@@ -35,5 +35,5 @@ def captcha_text() -> Generator[Tuple[int, RequestHandle]]:
     with open(captcha_path, "wb") as f:
         f.write(captcha_res.content)
     captcha = solver.solve(captcha_path)
-    yield (captcha, session)
+    yield captcha, session
     session.close()
