@@ -49,22 +49,27 @@ class DataBaseConnection:
             self.logger.error(f"❌ 数据库连接失败，错误详情：{e}")
             return None
 
-    def run_query(self, sql: str, check_size: int = 0) -> Any:
+    def run_query(self, sql: str, params: Optional[tuple] = None, check_size: int = 0) -> Any:
         """
-        执行SQL查询,默认返回所有结果.
-        :param sql: SQL查询语句.
-        :param check_size: 检查结果数量.
-        :return: 查询结果列表.
+        执行SQL查询，默认返回所有结果。
+        :param sql: SQL查询语句（可使用 %s 占位符）。
+        :param params: 查询参数元组，用于参数化查询，防止SQL注入。
+        :param check_size: 检查结果数量，大于0时只取前N条。
+        :return: 查询结果列表（成功）或 None（失败）。
         """
         if self.conn:
             try:
                 with self.conn.cursor() as cursor:
-                    cursor.execute(sql)
-                    results = cursor.fetchmany(check_size) if check_size > 0 else cursor.fetchall()
-                    self.logger.info(f"✅ SQL查询成功：{sql}，结果数量：{len(results) if results else 0}")
+                    # 参数化查询：将 params 传给 execute
+                    cursor.execute(sql, params)
+                    if check_size > 0:
+                        results = cursor.fetchmany(check_size)
+                    else:
+                        results = cursor.fetchall()
+                    self.logger.info(f"✅ SQL查询成功，结果数量：{len(results) if results else 0}")
                     return results
             except pymysql.MySQLError as e:
-                self.logger.error(f"❌ SQL查询失败：{sql}，错误详情：{e}")
+                self.logger.error(f"❌ SQL查询失败：{sql[:100]}...，错误详情：{e}")
                 return None
         print("❌ 数据库连接未建立或连接失败。")
 

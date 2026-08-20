@@ -15,6 +15,7 @@ LOGIN_URL = f"{BASE_URL}/home/login/login_submit" # 登录URL
 CAPTCHA_URL = f"{BASE_URL}/captcha.html?t={int(time() * 1000)}" # 验证码URL，带时间戳参数防止缓存
 ADD_ACCOUNT_URL = f"{BASE_URL}/user/user/add" # 添加or修改账号
 EDIT_PERSONAL = f"{BASE_URL}/home/index/edit_personal" # 编辑个人信息
+DELETE_ACCOUNT_URL = f"{BASE_URL}/user/user/delete" # 删除账号
 FILE_UPLOAD = f"{BASE_URL}/api/index/upload" # 文件上传
 SUBMIT_CHECK = f"{BASE_URL}/api/check/submit_check" # 提交审核
 APPROVE_URL = f"{BASE_URL}/api/check/flow_check" # 获取审核信息

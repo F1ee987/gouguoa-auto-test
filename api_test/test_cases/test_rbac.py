@@ -6,51 +6,41 @@
 @Date   :2026/8/15 14:34
 """
 import pytest
-from config.conf import ADD_ACCOUNT_URL, DB
+from config.conf import ADD_ACCOUNT_URL, DB, DELETE_ACCOUNT_URL
 from string import digits
 from requests import Response
 from random import choice
-from utils import RequestHandle, DataBaseConnection, Logger
+from utils import DataBaseConnection, Logger
 
-def random_str(length: int =9):
-    return ''.join(choice(digits) for _ in range(length))
-
-@pytest.mark.skip(reason="暂时不执行该测试用例")
 class TestRbac:
-    """测试rbac权限控制"""
-    mobile = "13" + random_str(9)
-    email = random_str(6) + "@gougucms.com"
-    change_data = {
-        # 员工基本信息
-        "name": "赵启",                  # 员工姓名（必填）
-        "mobile": mobile,         # 手机号码（必填，用于登录）
-        "reg_pwd": "123456",
-        "email": email,    # 电子邮箱（必填）
-        "sex": str(choice([1,2])),                      # 员工性别：1-男，2-女（必填）
-        "entry_time": "2026-08-15",      # 入职日期（必填，格式：YYYY-MM-DD）
-
-        # 组织架构信息
-        "did": str(choice([i for i in range(1,16)])),                      # 主部门ID（必填，对应部门表的ID）
-        "position_id": str(choice([i for i in range(1,5)])),              # 岗位职称ID（必填，对应岗位表的ID）
-        "department_ids": "",            # 次要部门ID（多个用逗号分隔，可为空）
-        "pid": "0",                      # 上级主管ID（0表示无上级）
-
-        # 员工属性
-        "type": "2",                     # 员工类型：1-正式，2-试用，3-实习（必填）
-        "is_staff": "1",                 # 身份类型：1-企业员工，2-劳动派遣，3-兼职员工（必填）
-        "is_hide": "0",                  # 是否隐藏联系方式：0-否，1-是
-
-        # 权限控制
-        "auth_did": "3",                 # 数据权限范围：
-        # 0-仅自己，1-主部门，2-次部门，3-主次部门，
-        # 4-主部门及子部门，5-次部门及子部门，6-主次部门及子部门，
-        # 7-主部门顶级及子部门，8-次部门顶级及子部门，9-主次顶级及子部门，10-所有部门
-    }
+    """测试 RBAC 权限控制"""
+    name = "赵启"
+    mobile = "13" + ''.join(choice(digits) for _ in range(9))
+    email = str(choice(digits) * 4) + "@gougucms.com"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
                       "(KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
         "X-Requested-With": "XMLHttpRequest"
     }
+    @pytest.fixture
+    def unique_user_data(self):
+
+        return {
+                "name": self.name,
+                "mobile": self.mobile,
+                "email": self.email,
+                "reg_pwd": "123456",
+                "sex": str(choice([1, 2])),
+                "entry_time": "2026-08-15",
+                "did": str(choice(range(1, 16))),
+                "position_id": str(choice(range(1, 5))),
+                "department_ids": "",
+                "pid": "0",
+                "type": "2",
+                "is_staff": "1",
+                "is_hide": "0",
+                "auth_did": "3",
+            }
 
     @staticmethod
     def verify_success_response(response: Response, expected_code: int = 0, expected_msg: str = '操作成功'):
@@ -70,25 +60,68 @@ class TestRbac:
 
     @pytest.mark.auth
     @pytest.mark.rbac
-    def test_add_account_with_normal_user(self, normal_api_login: RequestHandle, db_connect: DataBaseConnection, logger: Logger):
-        """"使用普通用户权限添加用户or修改用户信息接口, 预期返回405状态码"""
-        db_connect.get_db_connection(
-            **DB
-        )
-        resp = normal_api_login.post(ADD_ACCOUNT_URL, data=self.change_data, headers=self.headers)
-        #验证
-        self.verify_success_response(resp, expected_code=405, expected_msg='没有权限')   # 验证接口返回的成功响应
-        logger.info("✅ 测试通过, 该用户无法修改用户信息")
+    def test_normal_user_cannot_add_account(self, normal_api_login, unique_user_data, logger):
+        """普通用户调用添加用户接口应返回 405"""
+        resp = normal_api_login.post(ADD_ACCOUNT_URL, data=unique_user_data, headers=self.headers)
+        self.verify_success_response(resp, expected_code=405, expected_msg='没有权限')
+        logger.info("✅ 普通用户无权限，返回 405")
 
     @pytest.mark.auth
     @pytest.mark.rbac
-    def test_add_account_with_admin(self, admin_api_login: RequestHandle, db_connect: DataBaseConnection, logger: Logger):
-        """"使用管理员权限添加or修改用户信息接口"""
-        db_connect.get_db_connection(
-            **DB
-        )
-        # 添加用户数据
-        resp = admin_api_login.post(ADD_ACCOUNT_URL, data=self.change_data, headers=self.headers)
-        #验证
+    def test_admin_add_account(self, admin_api_login, unique_user_data, logger, db_connect):
+        """管理员添加新用户"""
+        if self._verify_name_exist(db_connect, logger):  # 姓名不存在
+            resp = admin_api_login.post(ADD_ACCOUNT_URL, data=unique_user_data, headers=self.headers)
+            self.verify_success_response(resp)
+            logger.info("✅ 管理员成功添加用户")
+        else:
+            pytest.skip("测试数据中用户已存在，跳过本次添加测试")
+
+    def test_admin_edit_account(self, admin_api_login, db_connect, logger):
+        """管理员修改已存在用户"""
+        userid = 33
+        edit_data = {"id": userid, "mobile": "13" + ''.join(choice(digits) for _ in range(9))}
+        # 可选：验证用户存在
+        if not self._user_exists_by_id(db_connect, 33):
+            pytest.skip(f"用户 ID= {userid} 不存在")
+        resp = admin_api_login.post(ADD_ACCOUNT_URL, data=edit_data, headers=self.headers)
         self.verify_success_response(resp)
-        logger.info("✅ 测试通过, 该用户可以修改用户信息")
+        logger.info("✅ 管理员成功修改用户")
+
+    def test_del_account_unavailable(self, admin_api_login, unique_user_data, logger):
+        """删除用户接口未开放，应返回 405"""
+        resp = admin_api_login.post(DELETE_ACCOUNT_URL, data=unique_user_data, headers=self.headers)
+        self.verify_success_response(resp, expected_code=405, expected_msg='你没有权限,请联系管理员或者人事部')
+        logger.info("✅ 删除接口未开放，返回 405")
+
+    # 辅助方法
+    @staticmethod
+    def _user_exists_by_id(db_connect, user_id: int) -> bool:
+        db_connect.get_db_connection(**DB)
+        result = db_connect.run_query("SELECT id FROM oa_admin WHERE id = %s", (user_id,))
+        return bool(result)
+
+    def _verify_name_exist(self, db_connect: DataBaseConnection, logger: Logger) -> bool:
+        """
+        验证员工姓名是否已存在
+        :param db_connect: 数据库连接对象
+        :param logger: 日志记录对象
+        :return: True 表示姓名不存在（允许创建），False 表示已存在或查询出错
+        """
+        db_connect.get_db_connection(**DB)
+
+        # 参数化查询，%s 占位符
+        sql = "SELECT name FROM oa_admin WHERE name = %s"
+        params = (self.name,)
+
+        result = db_connect.run_query(sql, params=params)
+
+        if result is None:
+            logger.error("❌ 数据库查询出错，无法判断姓名是否存在，保守拒绝创建")
+            return False
+        elif not result:   # 空列表表示没有记录
+            logger.info("✅ 员工姓名不存在，允许创建")
+            return True
+        else:
+            logger.info("❌ 员工姓名已存在，不允许创建")
+            return False
