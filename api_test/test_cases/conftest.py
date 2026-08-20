@@ -10,12 +10,6 @@ import pytest
 from config.conf import HOME, LOGIN_URL, CAPTCHA_URL
 from utils import Reader, CaptchaSolver, DataBaseConnection, RequestHandle, Logger
 
-@pytest.fixture(scope='session')
-def db_connect(logger: Logger) -> Generator[DataBaseConnection]:
-    conn = DataBaseConnection(logger)
-    yield conn
-    conn.close()
-
 # ---------- 私有辅助函数 ----------
 def _login_session(csv_row_index: int, logger: Logger) -> RequestHandle:
     """
@@ -74,3 +68,9 @@ def admin_api_login(logger: Logger) -> Generator[RequestHandle, None, None]:
     yield sess
     print("✔关闭连接...")
     sess.close()
+
+@pytest.fixture(scope='session')
+def db_connect(logger: Logger) -> Generator[DataBaseConnection]:
+    conn = DataBaseConnection(logger)
+    yield conn
+    conn.close()
