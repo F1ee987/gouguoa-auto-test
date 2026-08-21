@@ -10,7 +10,8 @@ from config.conf import ADD_AND_EDIT_ACCOUNT_URL, DB, DELETE_ACCOUNT_URL
 from string import digits
 from requests import Response
 from random import choice
-from utils import DataBaseConnection, Logger
+from utils import DataBaseConnection, Logger, RequestHandle
+from typing import Dict
 
 class TestRbac:
     """测试 RBAC 权限控制"""
@@ -26,12 +27,12 @@ class TestRbac:
         "X-Requested-With": "XMLHttpRequest"
     }
     @pytest.fixture
-    def unique_user_data(self):
+    def unique_user_data(self) -> Dict[str, str]:
 
         return {
                 "name": self.name,
                 "mobile": self.mobile,
-                "email": self.email,
+                "email": str(self.email),
                 "reg_pwd": "123456",
                 "sex": str(choice([1, 2])),
                 "entry_time": "2026-08-15",
@@ -62,7 +63,7 @@ class TestRbac:
 
     @pytest.mark.auth
     @pytest.mark.rbac
-    def test_normal_user_cannot_add_account(self, normal_api_login, unique_user_data, logger):
+    def test_normal_user_cannot_add_account(self, normal_api_login: RequestHandle, unique_user_data: Dict[str, str], logger: Logger):
         """普通用户调用添加用户接口应返回 405"""
         resp = normal_api_login.post(ADD_AND_EDIT_ACCOUNT_URL, data=unique_user_data, headers=self.headers)
         self.verify_success_response(resp, expected_code=405, expected_msg='没有权限')
@@ -70,7 +71,7 @@ class TestRbac:
 
     @pytest.mark.auth
     @pytest.mark.rbac
-    def test_admin_add_account(self, admin_api_login, unique_user_data, logger, db_connect):
+    def test_admin_add_account(self, admin_api_login: RequestHandle, unique_user_data: Dict[str, str], logger: Logger, db_connect: DataBaseConnection):
         """管理员添加新用户"""
         if self._verify_name_exist(db_connect, logger):  # 姓名不存在
             resp = admin_api_login.post(ADD_AND_EDIT_ACCOUNT_URL, data=unique_user_data, headers=self.headers)
@@ -79,10 +80,10 @@ class TestRbac:
         else:
             pytest.skip("测试数据中用户已存在，跳过本次添加测试")
 
-    def test_admin_edit_account(self, admin_api_login, db_connect, logger):
+    def test_admin_edit_account(self, admin_api_login: RequestHandle, db_connect: DataBaseConnection, logger: Logger):
         """管理员修改已存在用户"""
         userid = 7
-        edit_data = {
+        edit_data: Dict[str, str|int] = {
             "id": userid,
             "mobile": "13" + ''.join(choice(digits) for _ in range(9)),
             "name": "赵武",
@@ -113,7 +114,7 @@ class TestRbac:
         logger.info(f"修改后用户信息：{new_user}")
         logger.info("✅ 管理员成功修改用户")
 
-    def test_del_account_unavailable(self, admin_api_login, unique_user_data, logger):
+    def test_del_account_unavailable(self, admin_api_login: RequestHandle, unique_user_data: Dict[str, str], logger: Logger):
         """删除用户接口未开放，应返回 405"""
         resp = admin_api_login.post(DELETE_ACCOUNT_URL, data=unique_user_data, headers=self.headers)
         self.verify_success_response(resp, expected_code=405, expected_msg='你没有权限,请联系管理员或者人事部')
@@ -121,7 +122,7 @@ class TestRbac:
 
     # 辅助方法
     @staticmethod
-    def _user_exists_by_id(db_connect, user_id: int) -> bool:
+    def _user_exists_by_id(db_connect: DataBaseConnection, user_id: int) -> bool:
         db_connect.get_db_connection(**DB)
         result = db_connect.query("SELECT id FROM oa_admin WHERE id = %s", (user_id,))
         return bool(result)

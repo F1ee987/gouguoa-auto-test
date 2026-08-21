@@ -18,6 +18,11 @@ class RequestHandle:
             requests.Session() if use_session else None
         )
 
+    def add_cookie(self, cookie: Any) -> None:
+        """添加 Cookie"""
+        if self.session:
+            self.session.cookies.update(cookie)
+
     def __request(self, method: str, url: str, **kwargs: Any) -> requests.Response:
         """
         发送请求,

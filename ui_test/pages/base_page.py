@@ -14,6 +14,8 @@ from selenium.webdriver.chrome.options import Options
 from time import sleep
 from random import uniform
 from typing import Optional
+from datetime import datetime
+from config.conf import HOME
 
 class BasePage:
     """基础页面操作"""
@@ -51,7 +53,10 @@ class BasePage:
             url (str): 要打开的URL
         """
         self._verify_driver()
-        self._driver.get(url)
+        try:
+            self._driver.get(url)
+        except TimeoutError:
+            raise TimeoutError(f"打开URL {url} 超时")
 
     @staticmethod
     def force_wait(seconds: int) -> None:
@@ -62,13 +67,13 @@ class BasePage:
         """
         sleep(seconds)
 
-    def ec_wait(self, by: str, value: str, timeout: int = 10) -> Optional[WebElement]:
+    def ec_wait(self, by: str, value: str, timeout: int = 5) -> Optional[WebElement]:
         """使用显式等待查找元素
 
         Args:
             by (str): 查找方式
             value (str): 查找的值
-            timeout (int, optional): 超时时间，默认10秒
+            timeout (int, optional): 超时时间，默认5秒
 
         Returns:
             WebElement: 找到的元素
@@ -110,6 +115,7 @@ class BasePage:
         self._verify_driver()
         target = element if element else self.find_element(by, value) if by and value else None
         if not target:
+            self.screenshot(f'{HOME}/docs/')
             raise NoSuchElementException(f"元素未找到: by={by}, value={value}")
         
         if input_wait:
@@ -130,9 +136,19 @@ class BasePage:
         self._verify_driver()
         target = element if element else self.find_element(by, value) if by and value else None
         if not target:
+            self.screenshot(f'{HOME}/docs/')
             raise NoSuchElementException(f"元素未找到: by={by}, value={value}")
         
         target.click()
+
+    def screenshot(self, file_path: str) -> None:
+        """截图并保存到指定路径
+        Args:
+            file_path (str): 截图保存的路径
+        """
+        self._verify_driver()
+        self._driver.save_screenshot(file_path+ ''.join(f"fail_screenshot{datetime.now().strftime('%Y%m%d%H%M%S')}.png"))
+        print(f"失败截图已保存到 {file_path}")
 
     def quit(self) -> None:
         """退出浏览器"""

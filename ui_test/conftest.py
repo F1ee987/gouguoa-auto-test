@@ -7,9 +7,10 @@
 """
 import pytest
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope='session')
 def driver():
     from selenium import webdriver
     d = webdriver.Chrome()
     yield d
-    d.close()
+    print("关闭浏览器1")
+    d.quit()

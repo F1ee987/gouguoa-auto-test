@@ -8,8 +8,7 @@
 
 import pymysql
 from pymysql.connections import Connection
-from pymysql import cursors
-from typing import Optional, Any
+from typing import Optional, Any, Tuple
 
 class DataBaseConnection:
     """
@@ -22,22 +21,33 @@ class DataBaseConnection:
         self.conn: Optional[Connection] = None
         self.logger = logger
 
-    def get_db_connection(self, host: str, port: str|int, user: str, password: str, database: str, timeout: int = 5) -> Optional[Connection]:
-        """
-        连接MySQL数据库.
-        :param port: 数据库端口号.
-        :param host: 数据库主机地址.
-        :param user: 用户名.
-        :param password: 密码.
-        :param database: 数据库名称.
-        :param timeout: 连接超时时间，单位为秒.
-        :return: MySQL数据库的连接对象.
+    def get_db_connection(
+        self,
+        host: str,
+        port: str | int,
+        user: str | int,          
+        password: str | int,      
+        database: str,
+        timeout: float = 5
+    ) -> Optional[Connection]:
+        """数据库连接方法，返回数据库连接对象.
+
+        Args:
+            host (str): 数据库主机地址
+            port (str | int): 数据库端口号
+            user (str | int): 用户名
+            password (str | int): 密码
+            database (str): 数据库名
+            timeout (int, optional): 连接超时时间. Defaults to 5.
+
+        Returns:
+            Optional[Connection]: 数据库连接对象，如果连接失败则返回 None.
         """
         try:
             connection: Connection = pymysql.connect(
                 host=host,
-                user=user,
-                password=password,
+                user=str(user),           # 确保转为字符串
+                password=str(password),   # 确保转为字符串
                 database=database,
                 port=int(port),
                 cursorclass=pymysql.cursors.DictCursor,
@@ -48,8 +58,11 @@ class DataBaseConnection:
         except pymysql.MySQLError as e:
             self.logger.error(f"❌ 数据库连接失败，错误详情：{e}")
             return None
+        except ValueError as ve:
+            self.logger.error(f"❌ 数据库连接参数错误，错误详情：{ve}")
+            return None
 
-    def query(self, sql: str, params: Optional[tuple] = None, check_size: int = 0) -> Any:
+    def query(self, sql: str, params: Optional[Tuple[str|int, ...]] = None, check_size: int = 0) -> Any:
         """
         执行SQL查询，默认返回所有结果。
         :param sql: SQL查询语句（可使用 %s 占位符）。
