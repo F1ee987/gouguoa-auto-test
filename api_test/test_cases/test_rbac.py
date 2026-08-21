@@ -16,7 +16,10 @@ class TestRbac:
     """测试 RBAC 权限控制"""
     name = "赵启"
     mobile = "13" + ''.join(choice(digits) for _ in range(9))
-    email = str(choice(digits) * 4) + "@gougucms.com"
+    email = str(choice(digits) * 4) + "@gougucms.com",
+    did = str(choice(range(1, 16)))
+    position_id = str(choice(range(1, 5)))
+
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
                       "(KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
@@ -32,8 +35,8 @@ class TestRbac:
                 "reg_pwd": "123456",
                 "sex": str(choice([1, 2])),
                 "entry_time": "2026-08-15",
-                "did": str(choice(range(1, 16))),
-                "position_id": str(choice(range(1, 5))),
+                "did": self.did,
+                "position_id": self.position_id,
                 "department_ids": "",
                 "pid": "0",
                 "type": "2",
@@ -56,7 +59,6 @@ class TestRbac:
         msg = res.get('msg')
         assert code == expected_code, f'操作失败，code={code}, msg={msg}'
         assert expected_msg in msg, f'操作失败，当前信息: {msg}'
-        print(res)   # 便于调试
 
     @pytest.mark.auth
     @pytest.mark.rbac
@@ -80,12 +82,35 @@ class TestRbac:
     def test_admin_edit_account(self, admin_api_login, db_connect, logger):
         """管理员修改已存在用户"""
         userid = 7
-        edit_data = {"id": userid, "mobile": "13" + ''.join(choice(digits) for _ in range(9))}
+        edit_data = {
+            "id": userid,
+            "mobile": "13" + ''.join(choice(digits) for _ in range(9)),
+            "name": "赵武",
+            "email": str(choice(digits) * 4) + "@gougucms.com",
+            "sex": str(choice([1, 2])),
+            "entry_time": "2026-08-15",
+            "did": self.did,
+            "position_id": self.position_id,
+            "department_ids": "",
+            "pid": "0",
+            "type": "2",
+            "is_staff": "1",
+            "is_hide": "0",
+            "auth_did": "3",
+        }
         # 可选：验证用户存在
         if not self._user_exists_by_id(db_connect, userid):
             pytest.skip(f"用户 ID= {userid} 不存在")
+        sql = "SELECT did, position_id, email, sex, mobile FROM oa_admin WHERE id = %s"
+        old_user = db_connect.query(sql, (userid,))
+        logger.info(f"修改前用户信息：{old_user}")
+
         resp = admin_api_login.post(ADD_AND_EDIT_ACCOUNT_URL, data=edit_data, headers=self.headers)
         self.verify_success_response(resp)
+
+        db_connect.commit() # 提交事务
+        new_user = db_connect.query(sql, (userid,))
+        logger.info(f"修改后用户信息：{new_user}")
         logger.info("✅ 管理员成功修改用户")
 
     def test_del_account_unavailable(self, admin_api_login, unique_user_data, logger):
@@ -98,7 +123,7 @@ class TestRbac:
     @staticmethod
     def _user_exists_by_id(db_connect, user_id: int) -> bool:
         db_connect.get_db_connection(**DB)
-        result = db_connect.run_query("SELECT id FROM oa_admin WHERE id = %s", (user_id,))
+        result = db_connect.query("SELECT id FROM oa_admin WHERE id = %s", (user_id,))
         return bool(result)
 
     def _verify_name_exist(self, db_connect: DataBaseConnection, logger: Logger) -> bool:
@@ -114,7 +139,7 @@ class TestRbac:
         sql = "SELECT name FROM oa_admin WHERE name = %s"
         params = (self.name,)
 
-        result = db_connect.run_query(sql, params=params)
+        result = db_connect.query(sql, params=params)
 
         if result is None:
             logger.error("❌ 数据库查询出错，无法判断姓名是否存在，保守拒绝创建")

@@ -49,7 +49,7 @@ class DataBaseConnection:
             self.logger.error(f"❌ 数据库连接失败，错误详情：{e}")
             return None
 
-    def run_query(self, sql: str, params: Optional[tuple] = None, check_size: int = 0) -> Any:
+    def query(self, sql: str, params: Optional[tuple] = None, check_size: int = 0) -> Any:
         """
         执行SQL查询，默认返回所有结果。
         :param sql: SQL查询语句（可使用 %s 占位符）。
@@ -73,6 +73,17 @@ class DataBaseConnection:
                 return None
         print("❌ 数据库连接未建立或连接失败。")
 
+
+    def commit(self) -> None:
+        """
+        提交数据库事务.
+        """
+        if self.conn:
+            self.conn.commit()
+            self.logger.info("✅ 数据库事务已提交")
+        else:
+            self.logger.error("❌ 数据库连接未建立或已关闭。")
+
     def close(self) -> None:
         """
         关闭数据库连接.
@@ -90,5 +101,5 @@ if __name__ == "__main__":
     logger = Logger(__file__)
     db_conn = DataBaseConnection(logger)
     conn = db_conn.get_db_connection(**DB)
-    print(db_conn.run_query('SELECT count(username) FROM oa_admin'))
+    print(db_conn.query('SELECT count(username) FROM oa_admin'))
     db_conn.close()
