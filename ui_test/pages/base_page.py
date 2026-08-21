@@ -141,14 +141,17 @@ class BasePage:
         
         target.click()
 
-    def screenshot(self, file_path: str) -> None:
+    def screenshot(self, file_path: str, element: Optional[WebElement] = None) -> None:
         """截图并保存到指定路径
         Args:
             file_path (str): 截图保存的路径
+            element (WebElement, optional): 要截图的元素
         """
         self._verify_driver()
+        if element:
+            element.screenshot(file_path)
         self._driver.save_screenshot(file_path+ ''.join(f"fail_screenshot{datetime.now().strftime('%Y%m%d%H%M%S')}.png"))
-        print(f"失败截图已保存到 {file_path}")
+        print(f"截图已保存到 {file_path}")
 
     def quit(self) -> None:
         """退出浏览器"""
