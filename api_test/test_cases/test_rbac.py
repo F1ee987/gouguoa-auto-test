@@ -6,7 +6,7 @@
 @Date   :2026/8/15 14:34
 """
 import pytest
-from config.conf import ADD_ACCOUNT_URL, DB, DELETE_ACCOUNT_URL
+from config.conf import ADD_AND_EDIT_ACCOUNT_URL, DB, DELETE_ACCOUNT_URL
 from string import digits
 from requests import Response
 from random import choice
@@ -62,7 +62,7 @@ class TestRbac:
     @pytest.mark.rbac
     def test_normal_user_cannot_add_account(self, normal_api_login, unique_user_data, logger):
         """普通用户调用添加用户接口应返回 405"""
-        resp = normal_api_login.post(ADD_ACCOUNT_URL, data=unique_user_data, headers=self.headers)
+        resp = normal_api_login.post(ADD_AND_EDIT_ACCOUNT_URL, data=unique_user_data, headers=self.headers)
         self.verify_success_response(resp, expected_code=405, expected_msg='没有权限')
         logger.info("✅ 普通用户无权限，返回 405")
 
@@ -71,7 +71,7 @@ class TestRbac:
     def test_admin_add_account(self, admin_api_login, unique_user_data, logger, db_connect):
         """管理员添加新用户"""
         if self._verify_name_exist(db_connect, logger):  # 姓名不存在
-            resp = admin_api_login.post(ADD_ACCOUNT_URL, data=unique_user_data, headers=self.headers)
+            resp = admin_api_login.post(ADD_AND_EDIT_ACCOUNT_URL, data=unique_user_data, headers=self.headers)
             self.verify_success_response(resp)
             logger.info("✅ 管理员成功添加用户")
         else:
@@ -79,12 +79,12 @@ class TestRbac:
 
     def test_admin_edit_account(self, admin_api_login, db_connect, logger):
         """管理员修改已存在用户"""
-        userid = 33
+        userid = 7
         edit_data = {"id": userid, "mobile": "13" + ''.join(choice(digits) for _ in range(9))}
         # 可选：验证用户存在
-        if not self._user_exists_by_id(db_connect, 33):
+        if not self._user_exists_by_id(db_connect, userid):
             pytest.skip(f"用户 ID= {userid} 不存在")
-        resp = admin_api_login.post(ADD_ACCOUNT_URL, data=edit_data, headers=self.headers)
+        resp = admin_api_login.post(ADD_AND_EDIT_ACCOUNT_URL, data=edit_data, headers=self.headers)
         self.verify_success_response(resp)
         logger.info("✅ 管理员成功修改用户")
 

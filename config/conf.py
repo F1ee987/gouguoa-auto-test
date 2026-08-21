@@ -13,7 +13,7 @@ from time import time
 BASE_URL = "http://192.168.198.133:81"  # 基础URL
 LOGIN_URL = f"{BASE_URL}/home/login/login_submit" # 登录URL
 CAPTCHA_URL = f"{BASE_URL}/captcha.html?t={int(time() * 1000)}" # 验证码URL，带时间戳参数防止缓存
-ADD_ACCOUNT_URL = f"{BASE_URL}/user/user/add" # 添加or修改账号
+ADD_AND_EDIT_ACCOUNT_URL = f"{BASE_URL}/user/user/add" # 添加or修改账号
 EDIT_PERSONAL = f"{BASE_URL}/home/index/edit_personal" # 编辑个人信息
 DELETE_ACCOUNT_URL = f"{BASE_URL}/user/user/delete" # 删除账号
 FILE_UPLOAD = f"{BASE_URL}/api/index/upload" # 文件上传
