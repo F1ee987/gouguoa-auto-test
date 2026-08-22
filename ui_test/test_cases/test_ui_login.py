@@ -1,7 +1,7 @@
 import pytest
 from ui_test.pages import LoginPage
 from selenium.webdriver.remote.webdriver import WebDriver
-from utils import prepare_account
+from utils import prepare_account, Logger
 from config.conf import BASE_URL
 
 class TestLogin:
@@ -15,7 +15,7 @@ class TestLogin:
     @pytest.mark.login
     @pytest.mark.ui
     @pytest.mark.parametrize('username,password,expected_code', TEST_DATA, ids=TEST_IDS)
-    def test_login(self, username, password, expected_code, setup, logger):
+    def test_login(self, username: str, password: str, expected_code: str, setup: LoginPage, logger: Logger):
         logger.info(f"正在测试,用户名: {username}")
         setup.login(username, password)
         if expected_code == '0':

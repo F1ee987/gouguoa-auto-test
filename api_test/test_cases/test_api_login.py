@@ -10,7 +10,7 @@ import requests
 import time
 import os
 from config.conf import BASE_URL, LOGIN_URL, HOME, CAPTCHA_URL
-from utils import CaptchaSolver, RequestHandle, Logger,prepare_account, del_cache
+from utils import CaptchaSolver, RequestHandle, Logger, prepare_account, del_cache
 
 def try_brute_force_captcha(username: str, password: str):
     """尝试暴力破解验证码（增强版）"""

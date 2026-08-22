@@ -43,7 +43,7 @@ def _login_session(csv_row_index: int,
 
 @pytest.fixture(scope='function')
 def normal_api_login(logger: Logger,
-                     api_captcha
+                     api_captcha: Tuple[int, RequestHandle]
                      ) -> Generator[RequestHandle]:
     """
     使用普通员工用户登录（CSV 第5行，索引4）
@@ -54,7 +54,7 @@ def normal_api_login(logger: Logger,
 
 @pytest.fixture(scope='function')
 def hr_api_login(logger: Logger,
-                 api_captcha
+                 api_captcha: Tuple[int, RequestHandle]
                     ) -> Generator[RequestHandle]:
     """
     使用人力资源用户登录（CSV 第3行，索引2）
@@ -65,7 +65,7 @@ def hr_api_login(logger: Logger,
 
 @pytest.fixture(scope='function')
 def admin_api_login(logger: Logger,
-                    api_captcha
+                    api_captcha: Tuple[int, RequestHandle]
                     ) -> Generator[RequestHandle]:
     """
     使用管理员用户登录（CSV 第2行，索引1）
