@@ -12,5 +12,4 @@ def driver():
     from selenium import webdriver
     d = webdriver.Chrome()
     yield d
-    print("关闭浏览器1")
     d.quit()

@@ -7,11 +7,16 @@
 """
 import pytest
 from config.conf import FILE_UPLOAD, HOME
-from utils import Reader, RequestHandle, Logger
+from utils import Reader, RequestHandle, Logger, del_cache
 from typing import List, Tuple
 
 def load_upload_test_data() -> Tuple[List[Tuple[str, str, str]], List[str]]:
     """读取上传文件的csv文件"""
+    extension = ['.csv', '.txt', '.pdf']
+    filepath = f"{str(HOME)}/api_test/data/upload_data/upload"
+    for i in range(len(extension)):
+        with open(f'{filepath}{extension[i]}', 'w', encoding='utf-8') as f:
+                f.write(f'filetype={extension[i]}')
     print("开始读取上传文件的csv文件")
     r = Reader()
     filepath = f'{HOME}/api_test/data/upload_data.csv'
@@ -58,3 +63,6 @@ def test_upload(filetype: str, path: str, expected: str, admin_api_login: Reques
         logger.info(f"✅ 测试文件上传功能成功，状态码：{code}, 消息：{msg}")
     except AssertionError as e:
         logger.error(f"测试文件上传功能失败，状态码：{code}, 消息：{msg}, 错误信息：{e}")
+    finally:
+        if 'png' not in path:
+            del_cache(f'{str(HOME)+path}')

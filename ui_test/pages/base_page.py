@@ -144,14 +144,21 @@ class BasePage:
     def screenshot(self, file_path: str, element: Optional[WebElement] = None) -> None:
         """截图并保存到指定路径
         Args:
-            file_path (str): 截图保存的路径
+            file_path (str): 截图保存的路径（若element为None，则为目录路径，会自动生成文件名）
             element (WebElement, optional): 要截图的元素
         """
         self._verify_driver()
         if element:
             element.screenshot(file_path)
-        self._driver.save_screenshot(file_path+ ''.join(f"fail_screenshot{datetime.now().strftime('%Y%m%d%H%M%S')}.png"))
-        print(f"截图已保存到 {file_path}")
+        else:
+            full_path = f"{HOME}/ui_test/screenshots/{file_path}{datetime.now().strftime('%Y%m%d%H%M%S')}.png"
+            self._driver.save_screenshot(full_path)
+            print(f"全屏截图已保存到 {full_path}")
+
+    def current_url(self) -> str:
+        """获取当前页面URL"""
+        self._verify_driver()
+        return self._driver.current_url
 
     def quit(self) -> None:
         """退出浏览器"""

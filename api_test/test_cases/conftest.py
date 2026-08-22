@@ -8,7 +8,7 @@
 from typing import Generator, Dict, Tuple
 import pytest
 from config.conf import HOME, LOGIN_URL, CAPTCHA_URL
-from utils import Reader, DataBaseConnection, RequestHandle, Logger, CaptchaSolver
+from utils import Reader, DataBaseConnection, RequestHandle, Logger, CaptchaSolver, del_cache
 
 # ---------- 私有辅助函数 ----------
 def _login_session(csv_row_index: int,
@@ -94,4 +94,5 @@ def api_captcha() -> Generator[Tuple[int, RequestHandle]]:
         f.write(captcha_res.content)
     captcha = solver.solve(captcha_path)
     yield captcha, session
+    del_cache(captcha_path)
     session.close()

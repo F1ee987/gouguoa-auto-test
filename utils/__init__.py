@@ -6,9 +6,9 @@
 @Date   :2026/8/14 15:07
 """
 from .captcha_solver import CaptchaSolver
-from .file_reader import Reader
+from .file_reader import Reader, prepare_account, del_cache
 from .logger import Logger
 from .db_util import DataBaseConnection
 from .request_util import RequestHandle
 
-__all__ = ['CaptchaSolver', 'DataBaseConnection', 'Reader', 'Logger', 'RequestHandle']
+__all__ = ['CaptchaSolver', 'DataBaseConnection', 'Reader', 'Logger', 'RequestHandle', 'prepare_account', 'del_cache']
