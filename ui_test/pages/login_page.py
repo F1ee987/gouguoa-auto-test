@@ -44,7 +44,7 @@ class LoginPage(BasePage):
             captcha = str(self.solver.solve(CAPTCHA_IMG))
         except Exception as e:
             print(f"验证码识别失败: {e}")
-            self.screenshot("login_captcha_failed")
+            self.screenshot(f"login_{username}_captcha_failed")
             raise Exception("验证码识别失败，无法执行登录操作。")  # 重新抛出异常以便捕获和处理
         finally:
             del_cache(CAPTCHA_IMG)

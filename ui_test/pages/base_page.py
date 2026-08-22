@@ -16,6 +16,7 @@ from random import uniform
 from typing import Optional
 from datetime import datetime
 from config.conf import HOME
+import os
 
 class BasePage:
     """基础页面操作"""
@@ -152,7 +153,10 @@ class BasePage:
         if element:
             element.screenshot(file_path)
         else:
-            full_path = f"{HOME}/ui_test/screenshots/{file_path}{datetime.now().strftime('%Y%m%d%H%M%S')}.png"
+            base_path = f"{HOME}/ui_test/screenshots/"
+            if not os.path.exists(base_path):
+                os.makedirs(base_path)
+            full_path = f"{base_path}{file_path}{datetime.now().strftime('%Y%m%d%H%M%S')}.png"
             self._driver.save_screenshot(full_path)
             print(f"全屏截图已保存到 {full_path}")
 
