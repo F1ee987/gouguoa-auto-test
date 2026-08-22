@@ -12,6 +12,7 @@ from typing import List, Any, Tuple
 import pytest
 import os
 from config.conf import HOME
+from functools import lru_cache
 
 class Reader:
     @staticmethod
@@ -70,6 +71,7 @@ def get_test_accounts() -> List[List[str]]:
     file_reader = Reader()
     return file_reader.read_csv(f'{HOME}/config/accounts.csv')
 
+@lru_cache(maxsize=None)
 def prepare_account() -> Tuple[List[Tuple[str, str, str]], List[str]]:
     """准备测试所需的账号信息"""
     accounts = get_test_accounts()
@@ -82,7 +84,7 @@ def prepare_account() -> Tuple[List[Tuple[str, str, str]], List[str]]:
         username = account[1]
         password = account[2]
         expected_code = account[3]
-        description = account[4]          # 原名 describe → description
+        description = account[4]          
         print(f"🚀 加载测试账号: {username}")
         test_data.append((username, password, expected_code))
         test_ids.append(description)
