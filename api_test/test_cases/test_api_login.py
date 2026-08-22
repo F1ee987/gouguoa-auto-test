@@ -8,6 +8,7 @@
 import pytest
 import requests
 import time
+import os
 from config.conf import BASE_URL, LOGIN_URL, HOME, CAPTCHA_URL
 from utils import CaptchaSolver, RequestHandle, Logger,prepare_account, del_cache
 
@@ -119,6 +120,8 @@ TEST_DATA, TEST_IDS = prepare_account()
 @pytest.mark.parametrize("username,password,expected_code", TEST_DATA, ids=TEST_IDS)
 def test_by_orc_captcha(username: str, password: str, expected_code: str, logger: Logger):
     """OCR 解码验证码, 并登录"""
+    dir_path = f"{str(HOME)}/api_test/data/captcha_data"
+    os.makedirs(dir_path, exist_ok=True)  # 创建目录
     solve = CaptchaSolver()
     session = RequestHandle(True)
     captcha_res = session.get(CAPTCHA_URL, timeout=5)
@@ -150,4 +153,5 @@ def test_by_orc_captcha(username: str, password: str, expected_code: str, logger
         logger.error("响应内容不是有效的 JSON 格式，无法解析。")
     finally:
         del_cache(captcha_img)
+        del_cache(dir_path,is_directory=True)
         session.close()

@@ -51,16 +51,19 @@ class Reader:
             return data
 
 #_________________配置函数____________________
-def del_cache(img_path: str) -> None:
-    """删除缓存文件"""
+def del_cache(filepath: str, is_directory: bool = False) -> None:
+    """删除缓存文件
+    :param filepath: 文件路径
+    :param is_directory: 是否是目录"""
     try:
-        if os.path.exists(img_path):
-            os.remove(img_path)
+        if is_directory:
+            if os.path.exists(filepath):
+                os.rmdir(filepath)
         else:
-            print(f"文件不存在: {img_path}")
+            if os.path.exists(filepath):
+                os.remove(filepath)
     except Exception as e:
-        print(f"删除文件时出错: {e}")
-
+        print(f"删除缓存文件时出错: {e}")
 
 def get_test_accounts() -> List[List[str]]:
     """读取accounts.csv文件返回测试账号数据"""
