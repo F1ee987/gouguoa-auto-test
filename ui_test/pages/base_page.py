@@ -33,6 +33,7 @@ class BasePage:
         if not self._driver:
             raise ValueError("浏览器驱动未初始化，请确保在创建BasePage实例时传入有效的WebDriver对象。")
 
+    @property
     def title(self) -> str:
         """获取当前页面标题"""
         self._verify_driver()
@@ -155,6 +156,7 @@ class BasePage:
             self._driver.save_screenshot(full_path)
             print(f"全屏截图已保存到 {full_path}")
 
+    @property
     def current_url(self) -> str:
         """获取当前页面URL"""
         self._verify_driver()

@@ -29,4 +29,4 @@ def run_all_test():
     pytest.main()
 
 if __name__ == '__main__':
-    only_run_api_test()
+    run_all_test()
