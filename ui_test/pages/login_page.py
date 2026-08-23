@@ -2,7 +2,6 @@
 登录页面对象（UI 层）：封装「打开页面 -> 定位元素 -> 识别验证码 -> 填写并提交」的完整流程。
 """
 from selenium.webdriver.remote.webdriver import WebDriver
-
 from config.conf import BASE_URL, CAPTCHA_DIR
 from utils import CaptchaSolver, delete_cache
 from ui_test.pages import BasePage

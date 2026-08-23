@@ -11,14 +11,12 @@ from random import uniform
 import os
 from time import sleep
 from typing import Optional
-
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-
 from config.conf import PROJECT_ROOT
 
 

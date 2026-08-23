@@ -7,9 +7,7 @@
 from functools import lru_cache
 from pathlib import Path
 from typing import List, Tuple
-
 import pytest
-
 from config.conf import PROJECT_ROOT
 from utils.file_reader import FileReader
 
