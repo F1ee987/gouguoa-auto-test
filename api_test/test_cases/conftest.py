@@ -7,9 +7,7 @@
     - 管理员 admin     -> 索引 1
 """
 from typing import Generator, Tuple
-
 import pytest
-
 from config.conf import CAPTCHA_DIR, DB
 from utils import (
     DataBaseConnection,
