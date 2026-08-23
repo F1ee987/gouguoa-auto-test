@@ -9,7 +9,6 @@
 import pymysql
 from pymysql.connections import Connection
 from typing import Any, Optional, Tuple
-
 from utils.logger import Logger
 
 
