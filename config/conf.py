@@ -19,7 +19,6 @@ from time import time
 from typing import Dict
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 class AppSettings(BaseSettings):
     """应用运行配置，全部从环境变量读取（前缀 GOUGUOA_）。
 

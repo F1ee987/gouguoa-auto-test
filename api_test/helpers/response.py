@@ -5,10 +5,7 @@
 避免重复且容易写错（例如把 logger.error(...) 当作断言消息传入）的断言模式。
 """
 import json
-from typing import Any
-
 from requests import Response
-
 
 def assert_http_ok(response: Response, context: str = "") -> None:
     """断言 HTTP 状态码为 200。"""

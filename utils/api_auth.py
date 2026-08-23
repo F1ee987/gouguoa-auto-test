@@ -5,18 +5,13 @@
 「下载验证码 -> 识别 -> 提交登录」流程收敛为可复用的函数，
 供接口测试用例与夹具统一调用。
 """
-from pathlib import Path
-from typing import Tuple
-
 import requests
-
 from config.conf import CAPTCHA_DIR, LOGIN_URL, get_captcha_url
 from utils.captcha_solver import CaptchaSolver
 from utils.logger import Logger
 from utils.request_util import RequestHandle
 
 logger = Logger(__name__)
-
 
 def fetch_captcha(session: RequestHandle, save_path: str) -> str:
     """从验证码接口下载图片并保存到本地，返回保存路径。
