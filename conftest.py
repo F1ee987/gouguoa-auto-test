@@ -5,9 +5,7 @@ pytest 全局夹具（项目根级）。
 """
 from time import time
 from typing import Generator
-
 import pytest
-
 from utils import Logger
 
 @pytest.fixture(scope='session', autouse=True)
