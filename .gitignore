@@ -22,3 +22,4 @@ api_test/test_cases/reports/
 ui_test/test_cases/reports/
 ui_test/screenshots/
 *.log
+docs/
