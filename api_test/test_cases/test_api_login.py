@@ -37,7 +37,7 @@ def test_login_with_ocr_captcha(username: str, password: str, expected_code: str
 
         # 2. 提交登录
         response = submit_login(session, username, password, captcha_value)
-        body = assert_api_success(response, context=f"用户名={username}")
+        body = assert_api_success(response, int(expected_code),context=f"用户名={username}")
 
         # 3. 校验业务返回码与用例预期一致
         assert str(body.get('code')) == str(expected_code), \
