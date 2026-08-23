@@ -7,7 +7,6 @@
     python run.py --ui             # 仅运行 UI 测试
     python run.py --target api_test/test_cases/test_rbac.py   # 运行指定文件/目录
 """
-import argparse
 import pytest
 from typing import List, Optional
 
@@ -22,30 +21,8 @@ def run_tests(targets: Optional[List[str]] = None) -> int:
     args = targets if targets else []
     return pytest.main(args)
 
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="gouguoa 自动化测试执行入口")
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("--api", action="store_true", help="仅运行接口测试")
-    group.add_argument("--ui", action="store_true", help="仅运行 UI 测试")
-    parser.add_argument(
-        "--target", nargs="*", default=None,
-        help="指定要运行的 pytest 路径（可多个），如 --target api_test/test_cases/test_rbac.py",
-    )
-    return parser.parse_args()
-
-
 def main() -> None:
-    args = parse_args()
-    if args.api:
-        run_tests(["./api_test/test_cases"])
-    elif args.ui:
-        run_tests(["./ui_test/test_cases"])
-    elif args.target:
-        run_tests(args.target)
-    else:
-        run_tests()
-
+    run_tests()
 
 if __name__ == '__main__':
     main()
