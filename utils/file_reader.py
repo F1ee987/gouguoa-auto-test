@@ -8,8 +8,12 @@
 import csv
 import json
 import os
-from typing import Any, List
+from typing import Any, List, Dict
 import yaml
+from config.conf import PROJECT_ROOT
+from utils.logger import Logger
+
+logger = Logger(__name__)
 
 class FileReader:
     """配置文件读取器，封装常见格式的一次性读取。"""
@@ -48,4 +52,33 @@ def delete_cache(file_path: str, is_directory: bool = False) -> None:
         else:
             os.remove(file_path)
     except Exception as e:
-        print(f"删除缓存文件时出错: {e}")
+        logger.error(f"删除缓存文件时出错: {e}")
+
+def get_account_by_role(role: str) -> Dict[str, Any]:
+    """根据角色获取对应的账户名。
+
+    Args:
+        role: 角色名称。
+
+    Returns:
+        对应的账户信息。
+    """
+    account = []
+    datas = FileReader.read_csv(f'{PROJECT_ROOT}/config/accounts.csv')
+    if not datas:
+        logger.error("未找到账户信息")
+    for row in datas:
+        if row[0] == role:
+           account.append(row[1:])
+    if not account:
+        logger.error(f"未找到角色 {role} 的账户信息")
+        raise ValueError(f"未找到角色 {role} 的账户信息")
+    else:
+        account_dict = dict(zip(datas[0][1:], account[0]))
+        return account_dict
+
+if __name__ == "__main__":
+    # 示例：读取 CSV 文件
+    csv_data = FileReader.read_csv(f'{PROJECT_ROOT}/config/accounts.csv')
+    print(csv_data)
+    print(get_account_by_role('boss'))

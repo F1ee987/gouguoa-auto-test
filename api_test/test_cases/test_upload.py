@@ -8,11 +8,11 @@
 import pytest
 from pathlib import Path
 
-from config.conf import FILE_UPLOAD, ROOT
+from config.conf import FILE_UPLOAD, PROJECT_ROOT
 from utils import Logger, RequestHandle, delete_cache, load_parametrized_csv
 
-UPLOAD_DIR = Path(ROOT) / "api_test" / "data" / "upload_data"
-UPLOAD_CSV = Path(ROOT) / "api_test" / "data" / "upload_data.csv"
+UPLOAD_DIR = Path(PROJECT_ROOT) / "api_test" / "data" / "upload_data"
+UPLOAD_CSV = Path(PROJECT_ROOT) / "api_test" / "data" / "upload_data.csv"
 
 
 def _ensure_dummy_files() -> None:
@@ -37,7 +37,7 @@ def test_upload(
     admin_api_login: RequestHandle, logger: Logger,
 ):
     """上传不同格式文件，校验返回 code 与预期一致。"""
-    file_path = str(ROOT) + relative_path
+    file_path = str(PROJECT_ROOT) + relative_path
     with open(file_path, "rb") as fp:
         response = admin_api_login.post(FILE_UPLOAD, files={"file": fp})
 

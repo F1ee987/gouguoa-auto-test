@@ -14,7 +14,7 @@ import ddddocr
 from typing import Any, Optional
 
 from utils.logger import Logger
-from config.conf import ROOT
+from config.conf import PROJECT_ROOT
 
 logger = Logger(__name__)
 
@@ -116,7 +116,7 @@ class CaptchaSolver:
         if not image_bytes:
             return
         timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
-        error_path = Path(ROOT) / 'docs' / f'error_captcha_{timestamp}.png'
+        error_path = Path(PROJECT_ROOT) / 'docs' / f'error_captcha_{timestamp}.png'
         error_path.parent.mkdir(parents=True, exist_ok=True)
         error_path.write_bytes(image_bytes)
         logger.error(f"验证码解析异常，已保存原始图片至: {error_path} (表达式: {expression})")
