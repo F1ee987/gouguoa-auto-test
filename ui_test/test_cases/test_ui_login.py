@@ -39,14 +39,14 @@ class TestLogin:
             # 期望登录成功：URL 应为 BASE_URL
             assert login_page.current_url.rstrip('/') == BASE_URL, \
                 logger.error(
-                    f"登录成功断言失败，期望 URL: {BASE_URL}，实际 URL: {login_page.current_url}"
+                    f"❌ 登录成功断言失败，期望 URL: {BASE_URL}，实际 URL: {login_page.current_url}"
                 )
-            logger.info(f"登录测试通过 | 用户名={username} | 预期>>成功")
+            logger.info(f"✅ 登录测试通过 | 用户名={username} | 预期>>成功")
         else:
             # 期望登录失败：URL 应仍停留在登录页
             assert "/home/login/index.html" in login_page.current_url, \
                 logger.error(
-                    f"登录失败断言失败，期望 URL 包含: {BASE_URL}/home/login/index.html，"
+                    f"❌ 登录失败断言失败，期望 URL 包含: {BASE_URL}/home/login/index.html，"
                     f"实际 URL: {login_page.current_url}"
                 )
-            logger.info(f"登录测试通过 | 用户名={username} | 预期>>失败")
+            logger.info(f"✅ 登录测试通过 | 用户名={username} | 预期>>失败")

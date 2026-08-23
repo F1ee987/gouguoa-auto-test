@@ -42,6 +42,10 @@ class RequestHandle:
         """发送 POST 请求。"""
         return self._send_request(method="POST", url=url, **kwargs)
 
+    def delete(self, url: str, **kwargs: Any) -> requests.Response:
+        """发送 DELETE 请求。"""
+        return self._send_request(method="DELETE", url=url, **kwargs)
+
     def close(self) -> None:
         """关闭会话（仅在启用 Session 时生效）。"""
         if self.session:

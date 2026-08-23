@@ -56,6 +56,7 @@ DELETE_ACCOUNT_URL = f"{BASE_URL}/user/user/delete"            # 删除账号
 FILE_UPLOAD = f"{BASE_URL}/api/index/upload"                   # 文件上传
 SUBMIT_CHECK = f"{BASE_URL}/api/check/submit_check"            # 提交审核（请假申请）
 APPROVE_URL = f"{BASE_URL}/api/check/flow_check"               # 审批接口
+FILE_DELETE = f"{BASE_URL}/home/files/delete"                  # 文件删除
 
 
 def get_captcha_url() -> str:

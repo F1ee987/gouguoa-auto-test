@@ -6,12 +6,16 @@
 """
 import json
 from requests import Response
+from utils import Logger
+
+logger = Logger(__name__)
 
 def assert_http_ok(response: Response, context: str = "") -> None:
     """断言 HTTP 状态码为 200。"""
     prefix = f"{context} " if context else ""
     assert response.status_code == 200, \
-        f"{prefix}HTTP 请求失败，状态码: {response.status_code}"
+        logger.error(f"❌ {prefix}HTTP 请求失败，状态码: {response.status_code}")
+    logger.info(f"✅ {prefix}HTTP 请求成功，状态码: {response.status_code}")
 
 
 def assert_api_success(
@@ -36,13 +40,14 @@ def assert_api_success(
     try:
         body: dict = response.json()
     except json.JSONDecodeError:
-        raise AssertionError(f"{prefix}响应不是有效的 JSON: {response.text}")
+        raise AssertionError(f"❌ {prefix}响应不是有效的 JSON: {response.text}")
 
     actual_code = body.get('code')
     actual_msg = body.get('msg', '')
     assert actual_code == expected_code, \
-        f"{prefix}接口返回非预期 code={actual_code}, msg={actual_msg}"
+        logger.error(f"❌ {prefix}接口返回非预期 code={actual_code}, msg={actual_msg}")
     if expected_msg is not None:
         assert expected_msg in actual_msg, \
-            f"{prefix}接口消息不匹配，期望包含 '{expected_msg}'，实际: {actual_msg}"
+            logger.error(f"❌ {prefix}接口消息不匹配，期望包含 '{expected_msg}'，实际: {actual_msg}")
+    logger.info(f"✅ {prefix}接口返回成功，code={actual_code}, msg={actual_msg}")
     return body

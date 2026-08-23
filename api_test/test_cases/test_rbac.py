@@ -10,9 +10,7 @@ RBAC 权限控制接口测试。
 from string import digits
 from random import choice
 from typing import Dict
-
 import pytest
-
 from config.conf import ADD_AND_EDIT_ACCOUNT_URL, DELETE_ACCOUNT_URL
 from utils import DataBaseConnection, Logger, RequestHandle
 from api_test.helpers.response import assert_api_success

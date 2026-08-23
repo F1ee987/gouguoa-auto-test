@@ -12,7 +12,7 @@ from .api_auth import (
 )
 from .captcha_solver import CaptchaSolver
 from .db_util import DataBaseConnection
-from .file_reader import FileReader, delete_cache
+from .file_reader import FileReader, delete_cache, get_account_by_role
 from .logger import Logger
 from .request_util import RequestHandle
 from .test_data import load_accounts, load_parametrized_csv, prepare_account
@@ -23,6 +23,7 @@ __all__ = [
     'FileReader',
     'Logger',
     'RequestHandle',
+    "get_account_by_role",
     'delete_cache',
     'prepare_account',
     'load_accounts',

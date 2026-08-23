@@ -54,31 +54,31 @@ def delete_cache(file_path: str, is_directory: bool = False) -> None:
     except Exception as e:
         logger.error(f"删除缓存文件时出错: {e}")
 
-def get_account_by_role(role: str) -> Dict[str, Any]:
+def get_account_by_role(accounts: List, role: str) -> Dict[str, Any]:
     """根据角色获取对应的账户名。
 
     Args:
         role: 角色名称。
+        accounts: 账户列表，格式为二维列表，第一列是角色名称，第二列是账户名。
 
     Returns:
         对应的账户信息。
     """
     account: List[List[str]] = []
-    datas: List[List[str]] = FileReader.read_csv(f'{PROJECT_ROOT}/config/accounts.csv')
-    if not datas:
+    if not accounts:
         logger.error("未找到账户信息")
-    for row in datas:
+    for row in accounts:
         if row[0] == role:
            account.append(row[1:])
     if not account:
         logger.error(f"未找到角色 {role} 的账户信息")
         raise ValueError(f"未找到角色 {role} 的账户信息")
     else:
-        account_dict: Dict[str, Any] = dict(zip(datas[0][1:], account[0]))
+        account_dict: Dict[str, Any] = dict(zip(accounts[0][1:], account[0]))
         return account_dict
 
 if __name__ == "__main__":
     # 示例：读取 CSV 文件
     csv_data = FileReader.read_csv(f'{PROJECT_ROOT}/config/accounts.csv')
     print(csv_data)
-    print(get_account_by_role('boss'))
+    print(get_account_by_role(csv_data,'boss'))

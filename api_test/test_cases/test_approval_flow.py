@@ -9,7 +9,6 @@
 from datetime import datetime
 from random import choice
 from typing import Any, Dict
-
 from config.conf import APPROVE_URL, SUBMIT_CHECK
 from utils import Logger, RequestHandle
 from api_test.helpers.response import assert_api_success

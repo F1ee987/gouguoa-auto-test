@@ -1,10 +1,5 @@
 """
 接口测试夹具：提供已登录会话、验证码、数据库连接等可复用资源。
-
-账号与角色映射（config/accounts.csv 行索引，0-based 含表头）：
-    - 普通员工 staff   -> 索引 4
-    - 人事经理 hr      -> 索引 2
-    - 管理员 admin     -> 索引 1
 """
 from typing import Generator, Tuple
 import pytest
@@ -18,29 +13,21 @@ from utils import (
     load_accounts,
     login_via_session,
     solve_captcha,
+    get_account_by_role
 )
-
-# 角色 -> accounts.csv 行索引（避免在各夹具中散落魔法数字）
-_ACCOUNT_ROW_INDEX = {
-    "staff": 4,
-    "hr": 2,
-    "admin": 1,
-}
 
 
 def _login_as(role: str, logger: Logger, captcha_session: Tuple[int, RequestHandle]) -> RequestHandle:
     """通用登录：按角色读取账号并提交登录，返回已登录会话。
 
     Args:
-        role: 角色名（staff / hr / admin），对应 _ACCOUNT_ROW_INDEX。
+        role: 角色名（staff / hr / admin）。
         logger: 日志记录器。
         captcha_session: (验证码计算结果, 会话对象) 二元组。
     """
-    accounts = load_accounts()
-    row_index = _ACCOUNT_ROW_INDEX[role]
-    account = accounts[row_index]
+    account = get_account_by_role(load_accounts(), role)
     captcha_value, session = captcha_session
-    return login_via_session(session, account[1], account[2], captcha_value)
+    return login_via_session(session, account.get('username'), account.get('password'), captcha_value)
 
 
 @pytest.fixture(scope='function')
@@ -54,7 +41,7 @@ def normal_api_login(logger: Logger, api_captcha: Tuple[int, RequestHandle]) -> 
 @pytest.fixture(scope='function')
 def hr_api_login(logger: Logger, api_captcha: Tuple[int, RequestHandle]) -> Generator[RequestHandle]:
     """以人事经理身份登录，返回已登录会话。"""
-    session = _login_as("hr", logger, api_captcha)
+    session = _login_as("hr_manager", logger, api_captcha)
     yield session
     session.close()
 
@@ -62,7 +49,7 @@ def hr_api_login(logger: Logger, api_captcha: Tuple[int, RequestHandle]) -> Gene
 @pytest.fixture(scope='function')
 def admin_api_login(logger: Logger, api_captcha: Tuple[int, RequestHandle]) -> Generator[RequestHandle]:
     """以管理员身份登录，返回已登录会话。"""
-    session = _login_as("admin", logger, api_captcha)
+    session = _login_as("boss", logger, api_captcha)
     yield session
     session.close()
 
