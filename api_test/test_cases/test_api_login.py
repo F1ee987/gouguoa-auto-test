@@ -5,7 +5,6 @@
 预期约定：expected_code=0 表示登录成功，=1 表示登录失败（禁用/密码错/空用户名等）。
 """
 import pytest
-
 from config.conf import CAPTCHA_DIR
 from utils import (
     Logger,
@@ -19,7 +18,6 @@ from utils import (
 from api_test.helpers.response import assert_api_success
 
 TEST_DATA, TEST_IDS = prepare_account()
-
 
 @pytest.mark.api
 @pytest.mark.login
