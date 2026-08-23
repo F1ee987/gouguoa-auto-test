@@ -10,11 +10,12 @@
 gouguoa-auto-test/
 ├── api_test/              # 接口测试模块
 │   ├── test_cases/        # 接口测试用例
-│   │   ├── conftest.py    # 接口测试夹具
+│   │   ├── conftest.py    # 接口测试夹具（已登录会话 / 验证码 / 数据库）
 │   │   ├── test_api_login.py  # 登录接口测试（含OCR验证码识别）
 │   │   ├── test_rbac.py   # 权限控制接口测试
 │   │   ├── test_upload.py # 文件上传接口测试
 │   │   └── test_approval_flow.py #全流程请假审批测试
+│   ├── helpers/           # 接口测试公共辅助（响应断言等可复用工具）
 │   └── data/              # 测试数据
 │       ├── captcha_data/  # 验证码图片缓存
 │       ├── upload_data/   # 上传测试文件
@@ -28,7 +29,7 @@ gouguoa-auto-test/
 │        └── test_ui_login.py   #自动化登录
 ├── utils/                 # 通用工具类
 │   ├── __init__.py
-│   ├── captcha.py         # OCR验证码识别与计算
+│   ├── captcha_solver.py         # OCR验证码识别与计算
 │   ├── db_util.py         # 数据库操作工具
 │   ├── logger.py          # 日志工具
 │   ├── file_reader.py     # 文件读取工具
@@ -74,22 +75,29 @@ pytest api_test/
 pytest ui_test/
 
 # 运行单个测试文件(示例)
-pytest api_test/test_cases/test_login_for_api.py
+pytest api_test/test_cases/test_api_login.py
 
 # 运行特定测试用例
-pytest api_test/test_cases/test_login_for_api.py::test_by_orc_captcha
+pytest api_test/test_cases/test_api_login.py::test_login_with_ocr_captcha
 ```
 
 生成的报告默认输出到 `./reports/report.html`（由 pytest.ini 的 --html 参数控制）。
 
 ## 关于 run.py
 
-`run.py` 为测试执行入口脚本，会调用 `pytest.main()` 执行所有测试。
+`run.py` 为测试执行入口脚本，会调用 `pytest.main()` 执行测试，并支持命令行参数选择范围：
+
+```bash
+python run.py                  # 运行全部测试（读取 pytest.ini 配置）
+python run.py --api            # 仅运行接口测试
+python run.py --ui             # 仅运行 UI 测试
+python run.py --target api_test/test_cases/test_rbac.py   # 运行指定文件/目录
+```
 
 ## 核心功能
 
 ### OCR 验证码识别
-项目使用 `utils/captcha.py` 实现 OCR 验证码自动识别，支持：
+项目使用 `utils/captcha_solver.py` 实现 OCR 验证码自动识别，支持：
 - 验证码图片下载与缓存（`api_test/data/captcha_data/`）
 - 算式验证码识别与计算（如 `15+3=18`）
 - 识别失败自动重试机制

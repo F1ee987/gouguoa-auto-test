@@ -1,68 +1,61 @@
 """
-@Project:gouguoa-auto-test
-@File   :test_upload.py
-@IDE    :PyCharm
-@Author :zhousha
-@Date   :2026/8/18 14:58
+文件上传接口测试。
+
+用例数据来自 api_test/data/upload_data.csv：
+    file_type, path, expected_result, description
+其中 path 为相对于项目根目录的文件路径；expected_result 为期望的接口返回 code。
 """
 import pytest
+from pathlib import Path
+
 from config.conf import FILE_UPLOAD, HOME
-from utils import Reader, RequestHandle, Logger, del_cache
-from typing import List, Tuple
+from utils import Logger, RequestHandle, delete_cache, load_parametrized_csv
 
-def load_upload_test_data() -> Tuple[List[Tuple[str, str, str]], List[str]]:
-    """读取上传文件的csv文件"""
-    extension = ['.csv', '.txt', '.pdf']
-    filepath = f"{str(HOME)}/api_test/data/upload_data/upload"
-    for i in range(len(extension)):
-        with open(f'{filepath}{extension[i]}', 'w', encoding='utf-8') as f:
-                f.write(f'filetype={extension[i]}')
-    print("开始读取上传文件的csv文件")
-    r = Reader()
-    filepath = f'{HOME}/api_test/data/upload_data.csv'
-    print(f'读取文件路径：{filepath}')
-    result = r.read_csv(filepath)
-    if not result:
-        pytest.skip("上传文件的csv文件不存在")
-    data: List[Tuple[str, str, str]] = []
-    ids: List[str] = []
-    for row in result[1:]:
-        if len(row) < 4:
-            print(f"⚠ 跳过字段不完整的数据行：{row}")
-            continue
+UPLOAD_DIR = Path(HOME) / "api_test" / "data" / "upload_data"
+UPLOAD_CSV = Path(HOME) / "api_test" / "data" / "upload_data.csv"
 
-        data.append((row[0], row[1], row[2]))
-        ids.append(row[3])
-        print(f"✅ 加载测试数据：{row}")
 
-    if not data and not ids:
-        pytest.skip("没有有效的测试数据")
+def _ensure_dummy_files() -> None:
+    """保证上传测试所需的占位文件存在（缺失时创建空文件，便于全新环境运行）。"""
+    for ext in (".csv", ".txt", ".pdf"):
+        target = UPLOAD_DIR / f"upload{ext}"
+        if not target.exists():
+            target.write_text(f"filetype={ext}", encoding="utf-8")
 
-    return data, ids
 
-TEST_DATA, TEST_IDS = load_upload_test_data()
+_ensure_dummy_files()
+
+TEST_DATA, TEST_IDS = load_parametrized_csv(
+    UPLOAD_CSV, data_columns=[0, 1, 2], id_column=3, min_fields=4
+)
+
 
 @pytest.mark.upload
-@pytest.mark.parametrize("filetype, path, expected", TEST_DATA, ids=TEST_IDS)
-def test_upload(filetype: str, path: str, expected: str, admin_api_login: RequestHandle, logger: Logger):
-    with open(f'{str(HOME)+path}', 'rb') as f:
-        upload_res = admin_api_login.post(
-            FILE_UPLOAD,
-            files={'file': f}
-        )
-    assert upload_res.status_code == 200
-    try:
-        upload_json = upload_res.json()
-    except ValueError:
-        pytest.fail(f"响应不是有效的JSON: {upload_res.text}")
+@pytest.mark.parametrize("file_type, relative_path, expected_code", TEST_DATA, ids=TEST_IDS)
+def test_upload(
+    file_type: str, relative_path: str, expected_code: str,
+    admin_api_login: RequestHandle, logger: Logger,
+):
+    """上传不同格式文件，校验返回 code 与预期一致。"""
+    file_path = str(HOME) + relative_path
+    with open(file_path, "rb") as fp:
+        response = admin_api_login.post(FILE_UPLOAD, files={"file": fp})
 
-    code = upload_json.get('code')
-    msg = upload_json.get('msg', '')
+    assert response.status_code == 200
     try:
-        assert str(code) == expected, f'预期结果：{expected}, 实际结果：{code}, 消息：{msg}'
-        logger.info(f"✅ 测试文件上传功能成功，状态码：{code}, 消息：{msg}")
+        body = response.json()
+    except ValueError:
+        pytest.fail(f"响应不是有效的 JSON: {response.text}")
+
+    actual_code = str(body.get("code"))
+    try:
+        assert actual_code == str(expected_code), \
+            f"预期结果：{expected_code}, 实际结果：{actual_code}, 消息：{body.get('msg')}"
+        logger.info(f"✅ 文件上传成功 | 类型={file_type} | code={actual_code}")
     except AssertionError as e:
-        logger.error(f"测试文件上传功能失败，状态码：{code}, 消息：{msg}, 错误信息：{e}")
+        logger.error(f"文件上传失败 | 类型={file_type} | {e}")
+        raise
     finally:
-        if 'png' not in path:
-            del_cache(f'{str(HOME)+path}')
+        # 仅清理测试期间可能新增的占位文件，保留原始资源（如 png 截图素材）
+        if not relative_path.endswith(".png"):
+            delete_cache(file_path)

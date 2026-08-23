@@ -1,100 +1,51 @@
 """
-@Project: gouguoa-auto-test
-@File   : file_reader.py
-@IDE    : PyCharm
-@Author : zhousha
-@Date   : 2026/7/23 13:55
+文件读取与缓存清理工具。
+
+提供：
+- FileReader：读取 csv / yaml / json 等配置文件；
+- delete_cache：删除运行时产生的临时文件或空目录。
 """
 import csv
-import yaml
 import json
-from typing import List, Any, Tuple
-import pytest
 import os
-from config.conf import HOME
-from functools import lru_cache
+from typing import Any, List
+import yaml
 
-class Reader:
+class FileReader:
+    """配置文件读取器，封装常见格式的一次性读取。"""
+
     @staticmethod
     def read_csv(file_path: str) -> List[List[str]]:
-        """
-        读取csv文件
-        :param file_path: 文件路径
-        :return: 返回csv文件内容
-        """
-        with open(file_path, mode='r', encoding='utf-8') as f:
-            csv_reader = csv.reader(f)
-            loaded_rows: List[List[str]] = []
-            for row in csv_reader:
-                loaded_rows.append(row)
-            return loaded_rows
+        """读取 CSV 文件，返回包含所有行的二维列表（含表头）。"""
+        with open(file_path, mode='r', encoding='utf-8') as fp:
+            return [row for row in csv.reader(fp)]
 
     @staticmethod
     def read_yaml(file_path: str) -> Any:
-        """
-        读取yaml文件
-        :param file_path: 文件路径
-        :return: 返回yaml文件内容
-        """
-        with open(file_path, mode='r', encoding='utf-8') as f:
-            data = yaml.safe_load(f)
-            return data
+        """读取 YAML 文件，返回解析后的对象。"""
+        with open(file_path, mode='r', encoding='utf-8') as fp:
+            return yaml.safe_load(fp)
 
     @staticmethod
     def read_json(file_path: str) -> Any:
-        """
-        读取json文件
-        :param file_path: 文件路径
-        :return:
-        """
-        with open(file_path, mode='r', encoding='utf-8') as f:
-            data = json.loads(f.read())
-            return data
+        """读取 JSON 文件，返回解析后的对象。"""
+        with open(file_path, mode='r', encoding='utf-8') as fp:
+            return json.loads(fp.read())
 
-#_________________配置函数____________________
-def del_cache(filepath: str, is_directory: bool = False) -> None:
-    """删除缓存文件
-    :param filepath: 文件路径
-    :param is_directory: 是否是目录"""
+
+def delete_cache(file_path: str, is_directory: bool = False) -> None:
+    """删除运行时缓存文件或空目录。
+
+    Args:
+        file_path: 待删除的文件或目录路径。
+        is_directory: 为 True 时按目录处理（仅删除空目录）。
+    """
     try:
+        if not os.path.exists(file_path):
+            return
         if is_directory:
-            if os.path.exists(filepath):
-                os.rmdir(filepath)
+            os.rmdir(file_path)
         else:
-            if os.path.exists(filepath):
-                os.remove(filepath)
+            os.remove(file_path)
     except Exception as e:
         print(f"删除缓存文件时出错: {e}")
-
-def get_test_accounts() -> List[List[str]]:
-    """读取accounts.csv文件返回测试账号数据"""
-    file_reader = Reader()
-    return file_reader.read_csv(f'{HOME}/config/accounts.csv')
-
-@lru_cache(maxsize=None)
-def prepare_account() -> Tuple[List[Tuple[str, str, str]], List[str]]:
-    """准备测试所需的账号信息"""
-    accounts = get_test_accounts()
-    if not accounts:
-        pytest.skip("未读取到测试账号")
-
-    test_data: List[Tuple[str, str, str]] = []
-    test_ids: List[str] = []
-    for account in accounts[1:]:
-        username = account[1]
-        password = account[2]
-        expected_code = account[3]
-        description = account[4]          
-        print(f"🚀 加载测试账号: {username}")
-        test_data.append((username, password, expected_code))
-        test_ids.append(description)
-
-    if not test_data and not test_ids:
-        pytest.skip("没有有效的测试账号")
-
-    return test_data, test_ids
-
-if __name__ == '__main__':
-    reader = Reader()
-    rows = reader.read_csv('../config/accounts.csv')   # 原名 data → rows
-    print(rows[1])

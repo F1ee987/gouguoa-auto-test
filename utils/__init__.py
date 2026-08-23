@@ -1,14 +1,34 @@
 """
-@Project:gouguoa-auto-test
-@File   :__init__.py
-@IDE    :PyCharm
-@Author :zhousha
-@Date   :2026/8/14 15:07
-"""
-from .captcha_solver import CaptchaSolver
-from .file_reader import Reader, prepare_account, del_cache
-from .logger import Logger
-from .db_util import DataBaseConnection
-from .request_util import RequestHandle
+utils 包统一导出入口。
 
-__all__ = ['CaptchaSolver', 'DataBaseConnection', 'Reader', 'Logger', 'RequestHandle', 'prepare_account', 'del_cache']
+集中导出常用工具类与函数，便于上层以 `from utils import Xxx` 的方式使用，
+并隔离底层模块路径变化对调用方的影响。
+"""
+from .api_auth import (
+    fetch_captcha,
+    login_via_session,
+    solve_captcha,
+    submit_login,
+)
+from .captcha_solver import CaptchaSolver
+from .db_util import DataBaseConnection
+from .file_reader import FileReader, delete_cache
+from .logger import Logger
+from .request_util import RequestHandle
+from .test_data import load_accounts, load_parametrized_csv, prepare_account
+
+__all__ = [
+    'CaptchaSolver',
+    'DataBaseConnection',
+    'FileReader',
+    'Logger',
+    'RequestHandle',
+    'delete_cache',
+    'prepare_account',
+    'load_accounts',
+    'load_parametrized_csv',
+    'fetch_captcha',
+    'solve_captcha',
+    'submit_login',
+    'login_via_session',
+]

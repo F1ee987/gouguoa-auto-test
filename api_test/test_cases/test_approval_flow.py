@@ -1,68 +1,74 @@
 """
-@Project:gouguoa-auto-test
-@File   :test_approval_flow.py
-@IDE    :PyCharm
-@Author :zhousha
-@Date   :2026/8/19 15:56
+请假审批全流程接口测试。
+
+流程节点：
+    1) 员工提交请假申请（normal_api_login，期望成功 code=0）；
+    2) 总经理节点无审批权限（本用例以管理员会话模拟该节点，期望 code=1）；
+    3) 人事经理审批（hr_api_login，期望成功 code=0）。
 """
-from config.conf import SUBMIT_CHECK, APPROVE_URL
 from datetime import datetime
 from random import choice
-from typing import Dict, Any
+from typing import Any, Dict
+
+from config.conf import APPROVE_URL, SUBMIT_CHECK
+from utils import Logger, RequestHandle
+from api_test.helpers.response import assert_api_success
+
 
 class TestLeaveApprovalFlow:
-    """请假审批全流程"""
-    start_time = '2026-07-'+str(choice(range(1,30)))+" 09:00"
-    end_time = datetime.now().strftime("%Y-%m-%d %H:%M")
-    submit_data: Dict[str, Any] = {
-        "types": 2,                 # 请假类型：1=事假，2=病假，3=年假……
-        "start_date": start_time,   # 请假开始时间，格式 "YYYY-MM-DD HH:mm:ss"
-        "end_date": end_time,       # 请假结束时间，格式同上
-        "reason": "临时有事",        # 请假原因
-        "duration": 1,              # 请假时长（单位：天）
-        "id": 0,                    # 请假单ID：0 表示新建，非0 表示编辑已有单据
-        "flow_id": 1,               # 审批流ID：标识使用哪一套审批流程（如部门经理→人事→总经理）
-        "action_id": 1,             # 当前节点动作ID：通常与 flow_id 关联，1 表示“提交申请”
-        "check_uames": "人事",       # 下一级审批人姓名（字符串，多个用逗号分隔）
-        "check_uids": 3,            # 下一级审批人用户ID（整数，多个用逗号分隔的字符串）
-        "check_name": "leaves"      # 审批表单名称，固定值 "leaves"（请假审批表）
+    """请假审批全流程。"""
+
+    # 提交请假申请的数据模板（字段含义见行内注释）
+    SUBMIT_DATA: Dict[str, Any] = {
+        "types": 2,                     # 请假类型：1=事假，2=病假，3=年假……
+        "start_date": f"2026-07-{choice(range(1, 30))} 09:00",
+        "end_date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "reason": "临时有事",            # 请假原因
+        "duration": 1,                  # 请假时长（天）
+        "id": 0,                        # 请假单 ID：0=新建，非 0=编辑
+        "flow_id": 1,                   # 审批流 ID
+        "action_id": 1,                 # 当前节点动作：1=提交申请
+        "check_uames": "人事",           # 下一级审批人姓名
+        "check_uids": 3,                # 下一级审批人用户 ID
+        "check_name": "leaves",         # 审批表单名称（固定值）
     }
 
-    approve_data = {
-        'action_id': '1',       # 当前操作的动作ID，与提交时的 action_id 一致
-        'check_name': 'leaves', # 审批表单名称，固定值 "leaves"
-        'check_flow_id': '1',   # 审批流ID，与提交时的 flow_id 对应
-        'check_node': '1',      # 当前审批节点序号：1=第一个节点（经理审批）
-        'check_uids': '',       # 下一级审批人ID列表：空字符串表示审批结束（无后续节点）
-        # 若有下一级，格式如 "2,3"
-        'check': '1',           # 审批结果：'1'=同意（通过），'2'=驳回，'3'=撤销
-        'check_files': '',      # 附件文件路径：空字符串表示无附件
-        'content': '测试审核意见'       # 审批意见文字
+    # 审批动作的数据模板
+    APPROVE_DATA = {
+        "action_id": "1",       # 动作 ID，与提交时一致
+        "check_name": "leaves", # 审批表单名称
+        "check_flow_id": "1",   # 审批流 ID
+        "check_node": "1",      # 当前审批节点序号（1=经理节点）
+        "check_uids": "",       # 下一级审批人 ID（空=审批结束）
+        "check": "1",           # 审批结果：1=同意，2=驳回，3=撤销
+        "check_files": "",      # 附件路径
+        "content": "测试审核意见",  # 审批意见
     }
 
-    header = {
+    REQUEST_HEADERS = {
         "X-Requested-With": "XMLHttpRequest",
-        "User-Agent": "Mozilla/5.0 Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                      "(KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
     }
 
-    def test_staff_apply(self, normal_api_login: Any, logger: Any):
-        """员工向人事提交请假申请"""
-        resp = normal_api_login.post(SUBMIT_CHECK,data=self.submit_data)
+    def test_staff_apply(self, normal_api_login: RequestHandle, logger: Logger):
+        """员工向人事提交请假申请，期望成功（code=0）。"""
+        response = normal_api_login.post(SUBMIT_CHECK, data=self.SUBMIT_DATA)
+        body = assert_api_success(response, context="员工提交请假申请")
+        logger.info(f"✅ 员工提交请假申请成功, msg:{body.get('msg')}")
 
-        assert resp.status_code == 200, logger.error(f"员工提交请假申请失败，响应状态码: {resp.status_code}")
-        assert resp.json().get('code') == 0, logger.error(f"员工提交请假申请失败，响应内容: {resp.json()}")
-        logger.info(f"✅ 员工提交请假申请成功, msg:{resp.json().get('msg')}")
+    def test_manager_approve(self, admin_api_login: RequestHandle, logger: Logger):
+        """以管理员会话模拟总经理节点审批，该节点无审批权限，期望 code=1。"""
+        response = admin_api_login.post(
+            APPROVE_URL, data=self.APPROVE_DATA, headers=self.REQUEST_HEADERS
+        )
+        body = assert_api_success(response, expected_code=1, context="总经理节点审批")
+        logger.info(f"✅ 总经理无审批权限，审批失败, msg:{body.get('msg')}")
 
-    def test_manager_approve(self, admin_api_login: Any, logger: Any):
-        """总经理无审批权限，不审批"""
-        resp = admin_api_login.post(APPROVE_URL,data=self.approve_data,headers=self.header)
-        assert resp.status_code == 200, logger.error("连接服务器失败")
-        assert resp.json().get('code') == 1, logger.error(f"总经理审核预期code为1，实际为{resp.json().get('code')}")
-        logger.info(f"✅ 总经理无审批权限，审批失败, msg:{resp.json().get('msg')}")
-
-    def test_hr_approve(self, hr_api_login: Any, logger: Any):
-        """人事经理有审批权限，审批"""
-        resp = hr_api_login.post(APPROVE_URL,data=self.approve_data,headers=self.header)
-        assert resp.status_code == 200, logger.error("连接服务器失败")
-        assert resp.json().get('code') == 0, logger.error("人事经理审批失败")
-        logger.info(f"✅ 人事经理审批通过, msg:{resp.json().get('msg')}")
+    def test_hr_approve(self, hr_api_login: RequestHandle, logger: Logger):
+        """人事经理具有审批权限，期望 code=0。"""
+        response = hr_api_login.post(
+            APPROVE_URL, data=self.APPROVE_DATA, headers=self.REQUEST_HEADERS
+        )
+        body = assert_api_success(response, context="人事经理审批")
+        logger.info(f"✅ 人事经理审批通过, msg:{body.get('msg')}")
