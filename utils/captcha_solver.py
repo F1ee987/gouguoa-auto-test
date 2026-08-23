@@ -97,13 +97,13 @@ class CaptchaSolver:
         if right > self.ADDEND_UPPER_BOUND:
             right -= 50
 
-        result = left + right
-        if result > self.RESULT_UPPER_BOUND:
-            logger.warning(f"❌ 计算结果 {result} 超出预期范围，可能存在识别偏差")
+        calc_result = left + right
+        if calc_result > self.RESULT_UPPER_BOUND:
+            logger.warning(f"❌ 计算结果 {calc_result} 超出预期范围，可能存在识别偏差")
             self._dump_error_image(expression, image_bytes)
 
-        logger.info(f"验证码计算结果: {left} + {right} = {result}")
-        return result
+        logger.info(f"验证码计算结果: {left} + {right} = {calc_result}")
+        return calc_result
 
     @staticmethod
     def _dump_error_image(expression: str, image_bytes: Optional[bytes]) -> None:
