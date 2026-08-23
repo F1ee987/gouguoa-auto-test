@@ -63,8 +63,8 @@ def get_account_by_role(role: str) -> Dict[str, Any]:
     Returns:
         对应的账户信息。
     """
-    account = []
-    datas = FileReader.read_csv(f'{PROJECT_ROOT}/config/accounts.csv')
+    account: List[List[str]] = []
+    datas: List[List[str]] = FileReader.read_csv(f'{PROJECT_ROOT}/config/accounts.csv')
     if not datas:
         logger.error("未找到账户信息")
     for row in datas:
@@ -74,7 +74,7 @@ def get_account_by_role(role: str) -> Dict[str, Any]:
         logger.error(f"未找到角色 {role} 的账户信息")
         raise ValueError(f"未找到角色 {role} 的账户信息")
     else:
-        account_dict = dict(zip(datas[0][1:], account[0]))
+        account_dict: Dict[str, Any] = dict(zip(datas[0][1:], account[0]))
         return account_dict
 
 if __name__ == "__main__":
