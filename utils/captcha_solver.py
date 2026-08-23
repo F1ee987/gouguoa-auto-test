@@ -12,7 +12,6 @@ from pathlib import Path
 import re
 import ddddocr
 from typing import Any, Optional
-
 from utils.logger import Logger
 from config.conf import PROJECT_ROOT
 
@@ -67,7 +66,7 @@ class CaptchaSolver:
             去除空白、完成字符纠偏后的表达式字符串。
         """
         if not raw_text:
-            raise ValueError("OCR 识别结果为空，无法解析验证码")
+            raise ValueError("❌ OCR 识别结果为空，无法解析验证码")
         # 1) 纠正常见误识别字符（如把 '>' 当作 '7'）
         corrected = raw_text.translate(str.maketrans(self.CHAR_CORRECTION_MAP))
         # 2) 去除所有空白字符
@@ -87,7 +86,7 @@ class CaptchaSolver:
         plus_index = expression.find('+')
         if plus_index == -1:
             self._dump_error_image(expression, image_bytes)
-            raise ValueError(f"表达式中未找到 '+' 号: {expression}")
+            raise ValueError(f"❌ 表达式中未找到 '+' 号: {expression}")
 
         left = int(expression[:plus_index])
         right = int(expression[plus_index + 1:])
@@ -100,7 +99,7 @@ class CaptchaSolver:
 
         result = left + right
         if result > self.RESULT_UPPER_BOUND:
-            logger.warning(f"计算结果 {result} 超出预期范围，可能存在识别偏差")
+            logger.warning(f"❌ 计算结果 {result} 超出预期范围，可能存在识别偏差")
             self._dump_error_image(expression, image_bytes)
 
         logger.info(f"验证码计算结果: {left} + {right} = {result}")
@@ -119,7 +118,7 @@ class CaptchaSolver:
         error_path = Path(PROJECT_ROOT) / 'docs' / f'error_captcha_{timestamp}.png'
         error_path.parent.mkdir(parents=True, exist_ok=True)
         error_path.write_bytes(image_bytes)
-        logger.error(f"验证码解析异常，已保存原始图片至: {error_path} (表达式: {expression})")
+        logger.error(f"❌ 验证码解析异常，已保存原始图片至: {error_path} (表达式: {expression})")
 
 
 if __name__ == '__main__':
