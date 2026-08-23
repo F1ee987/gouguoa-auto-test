@@ -78,6 +78,6 @@ DB: Dict[str, str | int] = {
 
 # ------------------------- 路径配置 -------------------------
 # 项目根目录（config 的上一级）
-HOME = Path(__file__).parent.parent
+ROOT = Path(__file__).parent.parent
 # 验证码图片运行期缓存目录
-CAPTCHA_DIR = HOME / "api_test" / "data" / "captcha_data"
+CAPTCHA_DIR = ROOT / "api_test" / "data" / "captcha_data"

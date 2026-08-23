@@ -10,13 +10,13 @@ from typing import List, Tuple
 
 import pytest
 
-from config.conf import HOME
+from config.conf import ROOT
 from utils.file_reader import FileReader
 
 
 def load_accounts() -> List[List[str]]:
     """读取账号配置文件 config/accounts.csv，返回全部行（含表头）。"""
-    csv_path = Path(HOME) / 'config' / 'accounts.csv'
+    csv_path = Path(ROOT) / 'config' / 'accounts.csv'
     return FileReader.read_csv(str(csv_path))
 
 
@@ -29,7 +29,7 @@ def prepare_account() -> tuple[list[tuple], list[str]]:
         - test_data 为 (username, password, expected_code) 元组列表；
         - test_ids 为对应的用例描述，用作 pytest 参数化的 id。
     """
-    accounts_path = Path(HOME) / 'config' / 'accounts.csv'
+    accounts_path = Path(ROOT) / 'config' / 'accounts.csv'
     return load_parametrized_csv(
         accounts_path,
         data_columns=[1, 2, 3],  # username, password, expected_code

@@ -19,7 +19,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-from config.conf import HOME
+from config.conf import ROOT
 
 
 class BasePage:
@@ -149,7 +149,7 @@ class BasePage:
             element.screenshot(file_path)
             return
 
-        screenshot_dir = f"{HOME}/ui_test/screenshots/"
+        screenshot_dir = f"{ROOT}/ui_test/screenshots/"
         if not os.path.exists(screenshot_dir):
             os.makedirs(screenshot_dir)
         full_path = f"{screenshot_dir}{file_path}{datetime.now().strftime('%Y%m%d%H%M%S')}.png"
