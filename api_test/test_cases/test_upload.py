@@ -60,7 +60,7 @@ def test_upload_and_delete(
         # 上传成功后执行删除
         if actual_code == "0":
             file_id = body["data"]["id"]
-            logger.info(f"✅ 上传成功，类型={file_type}，ID={file_id}，准备删除")
+            logger.info(f"✅ 上传成功，类型={file_type}，ID={file_id} | 消息：{body.get('msg')}")
 
             with allure.step("删除上传的文件"):
                 del_response = admin_api_login.delete(FILE_DELETE, params={'ids': file_id})
