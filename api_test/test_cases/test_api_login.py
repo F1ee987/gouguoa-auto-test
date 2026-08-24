@@ -18,9 +18,12 @@ from utils import (
     submit_login,
 )
 from api_test.helpers.response import assert_api_success
+import allure
 
 TEST_DATA, TEST_IDS = prepare_account()
 
+@allure.feature("登录接口")
+@allure.severity("critical")
 @pytest.mark.api
 @pytest.mark.login
 @pytest.mark.parametrize("username,password,expected_code", TEST_DATA, ids=TEST_IDS)
@@ -30,23 +33,30 @@ def test_login_with_ocr_captcha(username: str, password: str, expected_code: str
     image_path = str(CAPTCHA_DIR / f"captcha_{username}.png")
 
     try:
-        # 1. 下载并识别验证码
-        fetch_captcha(session, image_path)
-        try:
-            captcha_value = solve_captcha(image_path)
-        except Exception:
-            shutil.copy2(image_path, f"api_error_{username}_captcha_{datetime.now().strftime('%Y%m%d%-H%M%S')}.png")
-            raise Exception("验证码识别失败，无法执行登录操作。")
-        logger.info(f"OCR 解码验证码: {captcha_value}")
+        with allure.step("获取验证码"):
+            # 1. 下载并识别验证码
+            fetch_captcha(session, image_path)
+            try:
+                captcha_value = solve_captcha(image_path)
+            except Exception:
+                shutil.copy2(image_path, f"api_error_{username}_captcha_{datetime.now().strftime('%Y%m%d%-H%M%S')}.png")
+                raise Exception("验证码识别失败，无法执行登录操作。")
+            logger.info(f"OCR 解码验证码: {captcha_value}")
 
         # 2. 提交登录
-        response = submit_login(session, username, password, captcha_value)
-        body = assert_api_success(response, int(expected_code),context=f"用户名={username}")
+        with allure.step("提交登录"):
+            response = submit_login(session, username, password, captcha_value)
+            with allure.step("断言接口业务返回符合预期"):
+                body = assert_api_success(response, int(expected_code),context=f"用户名={username}")
 
         # 3. 校验业务返回码与用例预期一致
-        assert str(body.get('code')) == str(expected_code), \
-            f"预期 code={expected_code}，实际 code={body.get('code')}, msg={body.get('msg')}"
-        logger.info(f"✅ 登录结果符合预期 | 用户名={username} | 预期 code={expected_code} | 实际 code={body.get('code')} | msg={body.get('msg')}")
+        with allure.step("校验业务返回码"):
+            assert str(body.get('code')) == str(expected_code), \
+                f"预期 code={expected_code}，实际 code={body.get('code')}, msg={body.get('msg')}"
+            logger.info(
+                f"✅ 登录结果符合预期 | 用户名={username} | 预期 code={expected_code} | 实际 code={body.get('code')} | msg={body.get('msg')}"
+            )
     finally:
-        delete_cache(image_path)
-        session.close()
+        with allure.step("清理资源"):
+            delete_cache(image_path)
+            session.close()
