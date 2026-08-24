@@ -30,7 +30,7 @@ class LoginPage(BasePage):
         login_button = self.ec_wait("xpath", "//*[@id='login-submit']")
 
         if not all([username_input, password_input, captcha_input, login_button]):
-            raise Exception("登录页面元素未找到，无法执行登录操作。")
+            raise Exception("❌ 登录页面元素未找到，无法执行登录操作。")
 
         # 截取页面验证码图片用于 OCR
         captcha_element = self.find_element("xpath", self.CAPTCHA_IMG_XPATH)
@@ -44,14 +44,12 @@ class LoginPage(BasePage):
         # 识别验证码（可能失败），无论成功与否都清理临时图片
         try:
             captcha_value = str(self.solver.solve(image_path))
-        except Exception as e:
-            print(f"验证码识别失败: {e}")
+        except Exception:
             self.screenshot(f"login_{username}_captcha_failed")
-            raise Exception("验证码识别失败，无法执行登录操作。")
+            raise Exception("❌ 验证码识别失败，无法执行登录操作。")
         finally:
             delete_cache(image_path)
 
         # 提交登录
         self.send_keys(captcha_input, keys=captcha_value)
         self.click(login_button)
-        self.force_wait(2)

@@ -70,14 +70,14 @@ class BasePage:
         self._driver.get(url)
 
     @staticmethod
-    def force_wait(seconds: int) -> None:
+    def force_wait(seconds: float) -> None:
         """强制休眠指定秒数（仅用于无法显式等待的过渡场景）。"""
         sleep(seconds)
 
-    def ec_wait(self, by: str, value: str, timeout: int = 5) -> Optional[WebElement]:
+    def ec_wait(self, by: str, value: str, timeout: float = 5, poll_frequency: float = 0.5) -> Optional[WebElement]:
         """使用显式等待查找元素，超时未找到则抛出 NoSuchElementException。"""
         self._verify_driver()
-        wait = WebDriverWait(self._driver, timeout)
+        wait = WebDriverWait(self._driver, timeout, poll_frequency=poll_frequency)
         return wait.until(
             EC.presence_of_element_located((by, value)),
             message=f"元素未找到: {by}={value}，等待了 {timeout} 秒",
@@ -150,7 +150,7 @@ class BasePage:
         screenshot_dir = f"{PROJECT_ROOT}/ui_test/screenshots/"
         if not os.path.exists(screenshot_dir):
             os.makedirs(screenshot_dir)
-        full_path = f"{screenshot_dir}{file_path}{datetime.now().strftime('%Y%m%d%H%M%S')}.png"
+        full_path = f"{screenshot_dir}{file_path}{datetime.now().strftime('%Y%m%d-%H%M%S')}.png"
         self._driver.save_screenshot(full_path)
         print(f"全屏截图已保存到 {full_path}")
 

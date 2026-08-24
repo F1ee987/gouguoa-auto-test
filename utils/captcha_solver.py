@@ -23,7 +23,7 @@ class CaptchaSolver:
 
     # OCR 常见误识别字符 -> 正确字符 的纠正映射
     CHAR_CORRECTION_MAP = {
-        '>': '7', 'q': '9', 'o': '0', ']': '1',
+        '>': '7', 'q': '9', 'o': '0', ']': '1', '之': '7',
         'z': '2', 'I': '1', 'g': '9', '十': '+', '了': '7',
     }
 
@@ -114,7 +114,7 @@ class CaptchaSolver:
         """
         if not image_bytes:
             return
-        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+        timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
         error_path = Path(PROJECT_ROOT) / 'docs' / f'error_captcha_{timestamp}.png'
         error_path.parent.mkdir(parents=True, exist_ok=True)
         error_path.write_bytes(image_bytes)

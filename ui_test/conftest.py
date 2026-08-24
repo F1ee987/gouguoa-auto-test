@@ -12,5 +12,6 @@ def driver():
     chrome_options = Options()
     chrome_options.add_argument('--headless')  # 启用无头模式
     browser = webdriver.Chrome(options=chrome_options)
+    browser.implicitly_wait(5)
     yield browser
     browser.quit()

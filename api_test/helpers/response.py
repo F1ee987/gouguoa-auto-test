@@ -44,10 +44,12 @@ def assert_api_success(
 
     actual_code = body.get('code')
     actual_msg = body.get('msg', '')
-    assert actual_code == expected_code, \
-        logger.error(f"❌ {prefix}接口返回非预期 code={actual_code}, msg={actual_msg}")
+    if actual_code != expected_code:
+        error_msg = f"❌ {prefix}接口返回非预期 code={actual_code}, msg={actual_msg}"
+        logger.error(error_msg)          # 记录日志
+        raise AssertionError(error_msg)  # 抛出带信息的异常
     if expected_msg is not None:
         assert expected_msg in actual_msg, \
-            logger.error(f"❌ {prefix}接口消息不匹配，期望包含 '{expected_msg}'，实际: {actual_msg}")
+            f"❌ {prefix}接口消息不匹配，期望包含 '{expected_msg}'，实际: {actual_msg}"
     logger.info(f"✅ {prefix}接口返回成功，code={actual_code}, msg={actual_msg}")
     return body

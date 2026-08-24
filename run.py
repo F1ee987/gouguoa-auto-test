@@ -3,6 +3,7 @@
 """
 import pytest
 from typing import List, Optional
+import os
 
 def run_tests(targets: Optional[List[str]] = None) -> int:
     """调用 pytest 执行测试。
@@ -17,6 +18,7 @@ def run_tests(targets: Optional[List[str]] = None) -> int:
 
 def main() -> None:
     run_tests()
+    os.system('allure generate ./reports/temps -o ./reports/html --clean')
 
 if __name__ == '__main__':
     main()
