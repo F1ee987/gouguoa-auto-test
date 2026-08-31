@@ -30,4 +30,4 @@ def logged_in_driver(driver: WebDriver):
     from ui_test.pages import LoginPage
     login_page = LoginPage(driver)
     login_page.login("zhousha", "123456")
-    yield login_page
+    yield driver

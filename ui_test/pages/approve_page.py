@@ -60,7 +60,7 @@ class ApproveApplyPage(BasePage):
         Args:
             approve_type: APPROVE_TYPE_MAP 的 key，如 "REQUEST_LEAVE"
         """
-        self.click(*self.CLICK_APPROVE_LOC)
+        self.wait_clickable(*self.CLICK_APPROVE_LOC)
         locator = self.APPROVE_TYPE_MAP.get(approve_type)
         if not locator:
             raise ValueError(f"未定义的审批类型: {approve_type}，可选: {list(self.APPROVE_TYPE_MAP.keys())}")
