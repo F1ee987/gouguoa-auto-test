@@ -12,7 +12,10 @@ from ui_test.pages import LoginPage
 
 TEST_DATA, TEST_IDS = prepare_account()
 
-@allure.feature("UI 登录测试")
+test_params = [(u, p, c, tid) for (u, p, c), tid in zip(TEST_DATA, TEST_IDS)]
+
+@allure.epic("🖥️ UI测试")
+@allure.feature("登录测试")
 class TestLogin:
     """UI 登录测试套件。"""
 
@@ -23,20 +26,22 @@ class TestLogin:
 
     @pytest.mark.login
     @pytest.mark.ui
-    @pytest.mark.parametrize('username,password,expected_code', TEST_DATA, ids=TEST_IDS)
+    @pytest.mark.parametrize('username,password,expected_code, test_id', test_params, ids=TEST_IDS)
     def test_login(
         self,
         username: str,
         password: str,
         expected_code: str,
+        test_id: str,
         login_page: LoginPage,
         logger: Logger,
     ):
+        allure.dynamic.title(f"{test_id},预期结果: {"成功" if expected_code == '0' else '失败'}")
         with allure.step(f"测试登录, 用户名: {username}"):
             logger.info(f"正在测试, 用户名: {username}")
             login_page.login(username, password)
 
-        with allure.step(f"断言登录结果, 用户名: {username}"):
+        with allure.step(f"断言登录结果, 预期结果: {"成功" if expected_code == '0' else '失败'}"):
             # try:
             #     login_page.ec_wait('xpath',
             #                        '//*[@id="GouguApp"]/div/div[1]/div[2]/span[6]/ul/li/dl/dd[3]',

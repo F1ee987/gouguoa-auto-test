@@ -14,6 +14,7 @@ from utils import Logger, RequestHandle
 from api_test.helpers.response import assert_api_success
 import allure
 
+@allure.epic("🔌 接口测试")
 @allure.feature("请假审批全流程")
 class TestLeaveApprovalFlow:
     """请假审批全流程。"""
@@ -50,28 +51,36 @@ class TestLeaveApprovalFlow:
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                       "(KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
     }
-    @allure.story("员工提交请假申请")
+    @allure.title("员工提交请假申请")
+    @allure.severity("critical")
     def test_staff_apply(self, normal_api_login: RequestHandle, logger: Logger):
         """员工向人事提交请假申请，期望成功（code=0）。"""
-        response = normal_api_login.post(SUBMIT_CHECK, data=self.SUBMIT_DATA)
-        body = assert_api_success(response, context="员工提交请假申请")
-        logger.info(f"✅ 员工提交请假申请成功, msg:{body.get('msg')}")
+        with allure.step("员工提交请假申请"):
+            response = normal_api_login.post(SUBMIT_CHECK, data=self.SUBMIT_DATA)
+        with allure.step("验证接口返回结果"):
+            body = assert_api_success(response, context="员工提交请假申请")
+            logger.info(f"✅ 员工提交请假申请成功, msg:{body.get('msg')}")
 
-    @allure.story("总经理节点审批")
+    @allure.title("总经理节点审批")
     @allure.severity("critical")
     def test_manager_approve(self, admin_api_login: RequestHandle, logger: Logger):
         """以管理员会话模拟总经理节点审批，该节点无审批权限，期望 code=1。"""
-        response = admin_api_login.post(
-            APPROVE_URL, data=self.APPROVE_DATA, headers=self.REQUEST_HEADERS
-        )
-        body = assert_api_success(response, expected_code=1, context="总经理节点审批")
-        logger.info(f"✅ 总经理无审批权限，审批失败, msg:{body.get('msg')}")
+        with allure.step("总经理节点审批"):
+            response = admin_api_login.post(
+                APPROVE_URL, data=self.APPROVE_DATA, headers=self.REQUEST_HEADERS
+            )
+        with allure.step("验证接口返回结果"):
+            body = assert_api_success(response, expected_code=1, context="总经理节点审批")
+            logger.info(f"✅ 总经理无审批权限，审批失败, msg:{body.get('msg')}")
 
-    @allure.story("人事经理审批")
+    @allure.title("人事经理审批")
+    @allure.severity("critical")
     def test_hr_approve(self, hr_api_login: RequestHandle, logger: Logger):
         """人事经理具有审批权限，期望 code=0。"""
-        response = hr_api_login.post(
-            APPROVE_URL, data=self.APPROVE_DATA, headers=self.REQUEST_HEADERS
-        )
-        body = assert_api_success(response, context="人事经理审批")
-        logger.info(f"✅ 人事经理审批通过, msg:{body.get('msg')}")
+        with allure.step("人事经理审批"):
+            response = hr_api_login.post(
+                APPROVE_URL, data=self.APPROVE_DATA, headers=self.REQUEST_HEADERS
+            )
+        with allure.step("验证接口返回结果"):
+            body = assert_api_success(response, context="人事经理审批")
+            logger.info(f"✅ 人事经理审批通过, msg:{body.get('msg')}")

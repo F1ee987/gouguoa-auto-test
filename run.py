@@ -12,7 +12,6 @@ import os
 import pytest
 from typing import List, Optional
 
-
 def build_pytest_args(targets: Optional[List[str]] = None) -> List[str]:
     """根据筛选目标构造 pytest 命令行参数列表。
 

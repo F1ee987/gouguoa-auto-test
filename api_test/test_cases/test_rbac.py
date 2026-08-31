@@ -16,7 +16,7 @@ from utils import DataBaseConnection, Logger, RequestHandle
 from api_test.helpers.response import assert_api_success
 import allure
 
-@allure.epic("用户管理")
+@allure.epic("🔌 接口测试")
 @allure.feature("RBAC 权限控制")
 class TestRbac:
     """RBAC 权限控制测试套件。"""
@@ -78,7 +78,7 @@ class TestRbac:
         return False
 
     # --------------------------- 测试用例 ---------------------------
-    @allure.story("普通用户无权限新增账号（期望 405）")
+    @allure.title("普通用户无权限新增账号（期望 405）")
     @pytest.mark.auth
     @pytest.mark.rbac
     def test_normal_user_cannot_add_account(
@@ -91,7 +91,7 @@ class TestRbac:
         assert_api_success(response, expected_code=405, expected_msg="没有权限")
         logger.info("✅ 普通用户无权限，返回 405")
 
-    @allure.story("管理员可按唯一姓名新增用户")
+    @allure.title("管理员可按唯一姓名新增用户")
     @pytest.mark.auth
     @pytest.mark.rbac
     def test_admin_add_account(
@@ -115,7 +115,7 @@ class TestRbac:
                     with allure.step("跳过本次添加测试"):  # 跳过本次添加测试
                         pytest.skip("测试数据中用户已存在，跳过本次添加测试")
 
-    @allure.story("管理员可修改已存在用户（以 id=7 为例）")
+    @allure.title("管理员可修改已存在用户（以 id=7 为例）")
     @pytest.mark.auth
     def test_admin_edit_account(
         self, admin_api_login: RequestHandle, db_connect: DataBaseConnection, logger: Logger
@@ -157,7 +157,7 @@ class TestRbac:
         logger.info(f"修改后用户信息：{after}")
         logger.info("✅ 管理员成功修改用户")
 
-    @allure.story("删除用户接口未开放（期望 405）")
+    @allure.title("删除用户接口未开放（期望 405）")
     @pytest.mark.auth
     def test_del_account_unavailable(
         self, admin_api_login: RequestHandle, new_user_payload: Dict[str, str], logger: Logger

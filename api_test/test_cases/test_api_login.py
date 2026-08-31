@@ -22,13 +22,18 @@ import allure
 
 TEST_DATA, TEST_IDS = prepare_account()
 
-@allure.feature("登录接口")
+test_params = [(u, p, c, tid) for (u, p, c), tid in zip(TEST_DATA, TEST_IDS)]
+
+@allure.epic("🔌 接口测试")
+@allure.feature("登录接口测试")
 @allure.severity("critical")
 @pytest.mark.api
 @pytest.mark.login
-@pytest.mark.parametrize("username,password,expected_code", TEST_DATA, ids=TEST_IDS)
-def test_login_with_ocr_captcha(username: str, password: str, expected_code: str, logger: Logger):
+@pytest.mark.parametrize("username,password,expected_code, test_id", test_params, ids=TEST_IDS)
+def test_login_with_ocr_captcha(username: str, password: str, expected_code: str, test_id: str, logger: Logger):
     """OCR 解码验证码并登录，校验业务返回码与预期一致。"""
+    allure.dynamic.title(f"{test_id}")
+    allure.dynamic.description(f"测试账号: {username}, 预期返回码: {expected_code}")
     session = RequestHandle(use_session=True)
     image_path = str(CAPTCHA_DIR / f"captcha_{username}.png")
 
