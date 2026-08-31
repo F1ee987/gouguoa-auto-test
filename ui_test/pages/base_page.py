@@ -59,14 +59,14 @@ class BasePage:
         sleep(seconds)
 
     # --------------------------- 显式等待 ---------------------------
-    def wait_visible(self, by: str, value: str, timeout: float = 10) -> WebElement:
+    def wait_visible(self, by: str, value: str, timeout: float = 5) -> WebElement:
         """等待元素可见并返回"""
         return WebDriverWait(self._driver, timeout).until(
             EC.visibility_of_element_located((by, value)),
             message=f"元素未可见: {by}={value}，等待了 {timeout}s"
         )
 
-    def wait_clickable(self, by: str, value: str, timeout: float = 10) -> WebElement:
+    def wait_clickable(self, by: str, value: str, timeout: float = 5) -> WebElement:
         """等待元素可点击并返回"""
         return WebDriverWait(self._driver, timeout).until(
             EC.element_to_be_clickable((by, value)),
@@ -147,8 +147,11 @@ class BasePage:
                        当 element 不为 None 时为元素截图完整路径。
             element: 指定时对单个元素截图，否则对整个页面截图。
         """
+        # 元素截图时 file_path 已是完整路径，直接保存并返回；
+        # 否则会继续走到整页截图逻辑，把完整路径再拼进目录产生畸形文件名。
         if element:
             element.screenshot(file_path)
+            return
 
         screenshot_dir = f"{PROJECT_ROOT}/ui_test/screenshots/"
         if not os.path.exists(screenshot_dir):
