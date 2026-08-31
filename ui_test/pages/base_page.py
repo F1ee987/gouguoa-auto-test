@@ -24,49 +24,33 @@ class BasePage:
     """基础页面操作封装。"""
 
     def __init__(self, driver: WebDriver) -> None:
+        if not driver:
+            raise ValueError("WebDriver对象不能为空")
         self._driver = driver
         self.options: Optional[Options] = None
-
-    # --------------------------- 内部工具 ---------------------------
-    def _verify_driver(self) -> None:
-        """校验浏览器驱动已初始化。"""
-        if not self._driver:
-            raise ValueError("浏览器驱动未初始化，请确保在创建 BasePage 实例时传入有效的 WebDriver 对象。")
-
-    def _resolve_element(
-        self,
-        element: Optional[WebElement],
-        by: Optional[str],
-        value: Optional[str],
-    ) -> Optional[WebElement]:
-        """解析目标元素：优先使用直接传入的元素，否则按定位方式查找。"""
-        if element:
-            return element
-        if by and value:
-            return self.find_element(by, value)
-        return None
 
     # --------------------------- 属性 / 配置 ---------------------------
     @property
     def title(self) -> str:
         """当前页面标题。"""
-        self._verify_driver()
         return self._driver.title
 
     @property
     def current_url(self) -> str:
         """当前页面 URL。"""
-        self._verify_driver()
         return self._driver.current_url
 
     def add_options(self, options: Optional[Options]) -> None:
         """附加浏览器启动选项。"""
         self.options = options
 
+    @property
+    def get_screenshot_as_png(self) -> bytes:
+        return self._driver.get_screenshot_as_png()
+
     # --------------------------- 导航 / 等待 ---------------------------
     def open(self, url: str) -> None:
         """打开指定 URL。"""
-        self._verify_driver()
         self._driver.get(url)
 
     @staticmethod
@@ -74,26 +58,38 @@ class BasePage:
         """强制休眠指定秒数（仅用于无法显式等待的过渡场景）。"""
         sleep(seconds)
 
-    def ec_wait(self, by: str, value: str, timeout: float = 5, poll_frequency: float = 0.5) -> Optional[WebElement]:
-        """使用显式等待查找元素，超时未找到则抛出 NoSuchElementException。"""
-        self._verify_driver()
-        wait = WebDriverWait(self._driver, timeout, poll_frequency=poll_frequency)
-        return wait.until(
+    # --------------------------- 显式等待 ---------------------------
+    def wait_visible(self, by: str, value: str, timeout: float = 10) -> WebElement:
+        """等待元素可见并返回"""
+        return WebDriverWait(self._driver, timeout).until(
+            EC.visibility_of_element_located((by, value)),
+            message=f"元素未可见: {by}={value}，等待了 {timeout}s"
+        )
+
+    def wait_clickable(self, by: str, value: str, timeout: float = 10) -> WebElement:
+        """等待元素可点击并返回"""
+        return WebDriverWait(self._driver, timeout).until(
+            EC.element_to_be_clickable((by, value)),
+            message=f"元素不可点击: {by}={value}，等待了 {timeout}s"
+        )
+
+    def wait_present(self, by: str, value: str, timeout: float = 5) -> WebElement:
+        """等待元素存在于 DOM 中（不一定可见）"""
+        return WebDriverWait(self._driver, timeout).until(
             EC.presence_of_element_located((by, value)),
-            message=f"元素未找到: {by}={value}，等待了 {timeout} 秒",
+            message=f"元素不存在: {by}={value}，等待了 {timeout}s"
         )
 
     # --------------------------- 元素操作 ---------------------------
     def find_element(self, by: str, value: str) -> WebElement:
         """按定位方式查找元素（找不到由 Selenium 抛异常）。"""
-        self._verify_driver()
         return self._driver.find_element(by, value)
 
     def send_keys(
         self,
-        element: Optional[WebElement] = None,
         by: Optional[str] = None,
         value: Optional[str] = None,
+        element: Optional[WebElement] = None,
         keys: str = '',
         input_wait: bool = False,
     ) -> None:
@@ -106,9 +102,11 @@ class BasePage:
             keys: 待输入的文本。
             input_wait: 为 True 时逐字符输入并随机停顿，模拟人工输入。
         """
-        self._verify_driver()
-        target = self._resolve_element(element, by, value)
-        if not target:
+        if element:
+            target = element
+        elif by and value:
+            target = self.find_element(by, value)
+        else:
             self.screenshot("element_not_found")
             raise NoSuchElementException(f"元素未找到: by={by}, value={value}")
 
@@ -121,17 +119,24 @@ class BasePage:
 
     def click(
         self,
-        element: Optional[WebElement] = None,
         by: Optional[str] = None,
         value: Optional[str] = None,
+        element: Optional[WebElement] = None
     ) -> None:
         """点击元素（支持直接传入元素或按定位方式查找）。"""
-        self._verify_driver()
-        target = self._resolve_element(element, by, value)
-        if not target:
-            self.screenshot("element_not_found")
-            raise NoSuchElementException(f"元素未找到: by={by}, value={value}")
+        if element:
+            target = element
+        elif by and value:
+            try:
+                target = self.find_element(by, value)
+            except NoSuchElementException:
+                self.screenshot("element_not_found")
+                raise NoSuchElementException(f"元素未找到: by={by}, value={value}")
+        else:
+            raise ValueError("click() 需要传 element 或 (by, value)")
+
         target.click()
+            
 
     # --------------------------- 截图 ---------------------------
     def screenshot(self, file_path: str, element: Optional[WebElement] = None) -> None:
@@ -142,10 +147,8 @@ class BasePage:
                        当 element 不为 None 时为元素截图完整路径。
             element: 指定时对单个元素截图，否则对整个页面截图。
         """
-        self._verify_driver()
         if element:
             element.screenshot(file_path)
-            return
 
         screenshot_dir = f"{PROJECT_ROOT}/ui_test/screenshots/"
         if not os.path.exists(screenshot_dir):

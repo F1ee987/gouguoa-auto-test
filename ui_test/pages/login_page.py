@@ -24,10 +24,10 @@ class LoginPage(BasePage):
         self.open(self.LOGIN_PAGE_URL)
 
         # 等待关键元素出现
-        username_input = self.ec_wait("name", "username")
-        password_input = self.ec_wait("name", "password")
-        captcha_input = self.ec_wait("name", "captcha")
-        login_button = self.ec_wait("xpath", "//*[@id='login-submit']")
+        username_input = self.wait_present("name", "username")
+        password_input = self.wait_present("name", "password")
+        captcha_input = self.wait_present("name", "captcha")
+        login_button = self.wait_present("xpath", "//*[@id='login-submit']")
 
         if not all([username_input, password_input, captcha_input, login_button]):
             raise Exception("❌ 登录页面元素未找到，无法执行登录操作。")
@@ -38,8 +38,8 @@ class LoginPage(BasePage):
         self.screenshot(image_path, captcha_element)
 
         # 填写账号密码（模拟人工输入）
-        self.send_keys(username_input, keys=username, input_wait=True)
-        self.send_keys(password_input, keys=password, input_wait=True)
+        self.send_keys(element=username_input, keys=username, input_wait=True)
+        self.send_keys(element=password_input, keys=password, input_wait=True)
 
         # 识别验证码（可能失败），无论成功与否都清理临时图片
         try:
@@ -51,5 +51,5 @@ class LoginPage(BasePage):
             delete_cache(image_path)
 
         # 提交登录
-        self.send_keys(captcha_input, keys=captcha_value)
-        self.click(login_button)
+        self.send_keys(element=captcha_input, keys=captcha_value)
+        self.click(element=login_button)

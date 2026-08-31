@@ -39,11 +39,18 @@ class TestLogin:
         allure.dynamic.title(f"{test_id},预期结果: {"成功" if expected_code == '0' else '失败'}")
         with allure.step(f"测试登录, 用户名: {username}"):
             logger.info(f"正在测试, 用户名: {username}")
-            login_page.login(username, password)
+            try:
+                login_page.login(username, password)
+            except Exception:
+                allure.attach(
+                    login_page.get_screenshot_as_png,
+                    name="登录失败截图",
+                    attachment_type=allure.attachment_type.PNG
+                )
 
         with allure.step(f"断言登录结果, 预期结果: {"成功" if expected_code == '0' else '失败'}"):
             # try:
-            #     login_page.ec_wait('xpath',
+            #     login_page.wait_visible('xpath',
             #                        '//*[@id="GouguApp"]/div/div[1]/div[2]/span[6]/ul/li/dl/dd[3]',
             #                        timeout=0.5,
             #                        poll_frequency=0.1
@@ -57,10 +64,20 @@ class TestLogin:
 
             expected_success = (expected_code == '0')
             if expected_success and not login_success:
+                allure.attach(
+                    login_page.get_screenshot_as_png,
+                    name="登录失败截图",
+                    attachment_type=allure.attachment_type.PNG
+                )
                 raise Exception("❌ 登录失败，期望成功但实际失败。")
             elif not expected_success and login_success:
+                allure.attach(
+                    login_page.get_screenshot_as_png,
+                    name="登录失败截图",
+                    attachment_type=allure.attachment_type.PNG)
                 raise Exception("❌ 登录成功，期望失败但实际成功。")
             else:
                 logger.info(
-                    f"✅ 登录断言通过，用户名: {username}, 预期结果: {'成功' if expected_success else '失败'}, 实际结果: {'成功' if login_success else '失败'}。"
+                    f"✅ 登录断言通过，用户名: {username}, 预期结果: {'成功' if expected_success else '失败'}, "
+                    f"实际结果: {'成功' if login_success else '失败'}。"
                 )

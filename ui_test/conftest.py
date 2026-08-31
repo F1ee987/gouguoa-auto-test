@@ -2,6 +2,7 @@
 UI 测试夹具：提供浏览器驱动实例（会话级复用，测试结束自动退出）。
 """
 import pytest
+from selenium.webdriver.remote.webdriver import WebDriver
 
 @pytest.fixture(scope='session')
 def driver():
@@ -15,3 +16,18 @@ def driver():
     browser.implicitly_wait(5)
     yield browser
     browser.quit()
+
+@pytest.fixture(scope='function')
+def logged_in_driver(driver: WebDriver):
+    """返回已登录状态下的页面,基于普通员工登录
+
+    Args:
+        driver (WebDriver): 浏览器驱动
+
+    Yields:
+        _type_: 已登录页面
+    """
+    from ui_test.pages import LoginPage
+    login_page = LoginPage(driver)
+    login_page.login("zhousha", "123456")
+    yield login_page
