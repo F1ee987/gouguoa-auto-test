@@ -5,6 +5,7 @@
 @Author :zhousha
 @Date   :2026/9/1 11:58
 """
+import pytest
 from ui_test.pages import BasePage
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
@@ -101,7 +102,7 @@ class ApprovalPage(BasePage):
         """打开审批详情页；不传 id 则自动取一条待审批记录，返回实际使用的 ID"""
         approve_id = approve_id or self._fetch_pending_id()
         if not approve_id:
-            raise ValueError("没有待审批的请假记录")
+            pytest.skip("没有待审批的请假记录")
         print("打开审批详情页，实际使用的请假记录 ID:", approve_id)
         self.open(self._review_url(approve_id))
         return approve_id    # 返回给调用方做后续断言

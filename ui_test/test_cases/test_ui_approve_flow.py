@@ -62,3 +62,5 @@ class TestApprove:
                     name="审批结果错误",
                     attachment_type=allure.attachment_type.PNG
                 )
+            else:
+                logger.info(f"审批结果正确,实际状态: {"审核通过" if status == 2 else "审核拒绝"}")
