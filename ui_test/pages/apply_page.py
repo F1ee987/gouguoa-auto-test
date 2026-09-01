@@ -1,6 +1,6 @@
 """
 @Project:conf.py
-@File   :approve_page.py
+@File   :apply_page.py
 @IDE    :PyCharm
 @Author :zhousha
 @Date   :2026/8/31 13:05
@@ -18,7 +18,6 @@
    不使用 `/html/body/...` 这类绝对 xpath（页面结构一变即失效）。
 """
 from typing import Optional, Tuple
-
 from config.conf import BASE_URL
 from selenium.webdriver.remote.webdriver import WebDriver
 from ui_test.pages import BasePage

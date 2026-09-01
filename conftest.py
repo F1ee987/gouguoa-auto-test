@@ -6,7 +6,8 @@ pytest 全局夹具（项目根级）。
 from time import time
 from typing import Generator
 import pytest
-from utils import Logger
+from utils import Logger, DataBaseConnection
+from config.conf import DB
 
 @pytest.fixture(scope='session', autouse=True)
 def timer():
@@ -23,3 +24,11 @@ def logger() -> Generator[Logger]:
     log = Logger(__name__)
     yield log
     print("日志记录关闭")
+
+@pytest.fixture(scope='session')
+def db_connect(logger: Logger) -> Generator[DataBaseConnection]:
+    """数据库连接（会话级复用，连接一次，测试结束统一关闭）。"""
+    connection = DataBaseConnection(logger)
+    connection.connect(**DB)
+    yield connection
+    connection.close()

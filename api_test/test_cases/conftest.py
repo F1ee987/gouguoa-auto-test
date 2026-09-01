@@ -3,9 +3,8 @@
 """
 from typing import Generator, Tuple
 import pytest
-from config.conf import CAPTCHA_DIR, DB
+from config.conf import CAPTCHA_DIR
 from utils import (
-    DataBaseConnection,
     Logger,
     RequestHandle,
     delete_cache,
@@ -52,16 +51,6 @@ def admin_api_login(logger: Logger, api_captcha: Tuple[int, RequestHandle]) -> G
     session = _login_as("boss", logger, api_captcha)
     yield session
     session.close()
-
-
-@pytest.fixture(scope='session')
-def db_connect(logger: Logger) -> Generator[DataBaseConnection]:
-    """数据库连接（会话级复用，连接一次，测试结束统一关闭）。"""
-    connection = DataBaseConnection(logger)
-    connection.connect(**DB)
-    yield connection
-    connection.close()
-
 
 @pytest.fixture(scope='function')
 def api_captcha() -> Generator[Tuple[int, RequestHandle]]:

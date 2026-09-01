@@ -54,7 +54,7 @@ def delete_cache(file_path: str, is_directory: bool = False) -> None:
     except Exception as e:
         logger.error(f"删除缓存文件时出错: {e}")
 
-def get_account_by_role(accounts: List, role: str) -> Dict[str, Any]:
+def get_account_by_role(accounts: List[List[str]], role: str) -> Dict[str, Any]:
     """根据角色获取对应的账户名。
 
     Args:
