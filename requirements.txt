@@ -1,4 +1,6 @@
 pytest >=4.0.0
+# pytest.ini 的 --reruns 由该插件提供，缺失会导致 "unrecognized arguments"
+pytest-rerunfailures >= 16.0
 selenium >= 4.40.0
 requests >= 2.30.0
 ddddocr >= 1.6.0
@@ -7,3 +9,5 @@ PyYAML ~=6.0.3
 urllib3 >= 1.26.0
 pydantic-settings >= 2.0.0
 allure-python-commons>=2.16.0
+# 生成 allure 报告数据（--alluredir）的 pytest 插件
+allure-pytest>=2.16.0

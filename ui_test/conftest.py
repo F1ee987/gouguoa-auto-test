@@ -5,6 +5,10 @@ import pytest
 from selenium.webdriver.remote.webdriver import WebDriver
 from ui_test.pages import LoginPage
 
+# 登录账号集中维护：页面对象筛选待办数据时要用到同一个 username
+STAFF_ACCOUNT = ("zhousha", "123456")
+HR_ACCOUNT = ("renshi", "123456")
+
 @pytest.fixture(scope='session')
 def driver():
     """启动 Chrome 浏览器，测试结束后自动退出。"""
@@ -29,7 +33,7 @@ def logged_staff_driver(driver: WebDriver):
         _type_: 已登录页面
     """
     login_page = LoginPage(driver)
-    login_page.login("zhousha", "123456")
+    login_page.login(*STAFF_ACCOUNT)
     yield driver
 
 @pytest.fixture(scope='function')
@@ -42,5 +46,5 @@ def logged_hr_driver(driver: WebDriver):
         _type_: 已登录页面
     """
     login_page = LoginPage(driver)
-    login_page.login("renshi", "123456")
+    login_page.login(*HR_ACCOUNT)
     yield driver

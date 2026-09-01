@@ -25,7 +25,14 @@ class CaptchaSolver:
     CHAR_CORRECTION_MAP = {
         '>': '7', 'q': '9', 'o': '0', ']': '1', '之': '7',
         'z': '2', 'I': '1', 'g': '9', '十': '+', '了': '7',
+        # 括号类常被误当成 0/1：如 "30+5" 被识别成 "3)+5"
+        ')': '0', '(': '0', '[': '1', '{': '1', '}': '1',
+        'l': '1', 'i': '1', '|': '1', 'S': '5', 's': '5',
+        'B': '8', 'b': '6', 'A': '4', 'D': '0', 'O': '0',
     }
+
+    # 合法加法表达式（a+b，加数最多两位）
+    _ADDITION_PATTERN = re.compile(r'^(\d{1,2})\+(\d{1,2})$')
 
     # 算式中单个加数的经验上限，超过则视为 OCR 把数字识别过大并做修正
     ADDEND_UPPER_BOUND = 70
@@ -67,10 +74,12 @@ class CaptchaSolver:
         """
         if not raw_text:
             raise ValueError("❌ OCR 识别结果为空，无法解析验证码")
-        # 1) 纠正常见误识别字符（如把 '>' 当作 '7'）
+        # 1) 纠正常见误识别字符（如把 ')' 当作 '0'）
         corrected = raw_text.translate(str.maketrans(self.CHAR_CORRECTION_MAP))
         # 2) 去除所有空白字符
         expression = re.sub(r'\s+', '', corrected)
+        # 3) 丢弃剩余无法参与计算的杂点符号，避免直接解析崩溃
+        expression = re.sub(r'[^0-9+]', '', expression)
         logger.info(f"清洗后表达式: {expression}")
         return expression
 
@@ -81,15 +90,15 @@ class CaptchaSolver:
             expression: 清洗后的表达式，形如 "12+34"。
             image_bytes: 原始图片字节，识别异常时用于转储排查。
         Raises:
-            ValueError: 表达式中未找到 '+' 号。
+            ValueError: 表达式不是合法的 a+b 形式。
         """
-        plus_index = expression.find('+')
-        if plus_index == -1:
+        matched = self._ADDITION_PATTERN.match(expression)
+        if not matched:
             self._dump_error_image(expression, image_bytes)
-            raise ValueError(f"❌ 表达式中未找到 '+' 号: {expression}")
+            raise ValueError(f"❌ 无法解析加法表达式: {expression}")
 
-        left = int(expression[:plus_index])
-        right = int(expression[plus_index + 1:])
+        left = int(matched.group(1))
+        right = int(matched.group(2))
 
         # OCR 偶尔会把数字识别得过大（如把 12 识别成 62），做经验修正
         if left > self.ADDEND_UPPER_BOUND:

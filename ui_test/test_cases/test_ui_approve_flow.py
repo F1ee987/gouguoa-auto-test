@@ -1,6 +1,7 @@
 """员工请假申请 UI 流程测试。"""
 import allure
 from selenium.webdriver.remote.webdriver import WebDriver
+from ui_test.conftest import HR_ACCOUNT
 from ui_test.pages import ApproveApplyPage, ApprovalPage
 from utils import Logger, DataBaseConnection
 import random
@@ -41,7 +42,8 @@ class TestApprove:
     def test_hr_approve(self, logged_hr_driver: WebDriver, logger: Logger, db_connect: DataBaseConnection):
         """人事经理审核请假信息"""
         with allure.step("更换hr账户登录"):
-            approve_page = ApprovalPage(logged_hr_driver, db_connect)
+            # 传入 approver，只挑待当前账号审批的单子，避免打开他人待办后找不到审批按钮
+            approve_page = ApprovalPage(logged_hr_driver, db_connect, approver=HR_ACCOUNT[0])
         with allure.step("进入审批中心"):
             approve_id = approve_page.open_review_center()
         with allure.step(f"随机审核id为{approve_id}请假信息,随机拒绝or通过"):

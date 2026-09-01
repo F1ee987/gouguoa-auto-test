@@ -19,8 +19,26 @@ class LoginPage(BasePage):
         super().__init__(driver)
         self.solver = CaptchaSolver()  # 验证码识别器
 
-    def login(self, username: str, password: str) -> None:
-        """执行完整登录流程。"""
+    def login(self, username: str, password: str, retries: int = 3) -> None:
+        """执行完整登录流程。
+
+        Args:
+            username: 登录账号。
+            password: 登录密码。
+            retries: 最大尝试次数。验证码 OCR 偶发识别失败时刷新验证码重试，
+                     避免个别噪点导致整条用例失败。
+        """
+        for attempt in range(1, retries + 1):
+            try:
+                self._do_login(username, password)
+                return
+            except Exception as error:
+                if attempt == retries:
+                    raise
+                print(f"⚠️ 第 {attempt} 次登录失败（{error}），刷新验证码重试")
+
+    def _do_login(self, username: str, password: str) -> None:
+        """单次登录尝试：打开页面 -> 识别验证码 -> 填写并提交。"""
         self.open(self.LOGIN_PAGE_URL)
 
         # 等待关键元素出现
