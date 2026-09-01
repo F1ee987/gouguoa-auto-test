@@ -29,7 +29,7 @@ class TestApprove:
 
         with allure.step("校验提交结果"):
             print(f"提交后提示: {tip or '(无弹出层提示)'}")
-            if "请选择" not in tip:
+            if "请选择" in tip:
                 logger.error(f"表单存在未填写的必填项: {tip}")
                 allure.attach(
                     logged_staff_driver.get_screenshot_as_png(),
@@ -43,9 +43,20 @@ class TestApprove:
         with allure.step("更换hr账户登录"):
             approve_page = ApprovalPage(logged_hr_driver, db_connect)
         with allure.step("进入审批中心"):
-            approve_page.open_review_center()
-        with allure.step("随机审核请假信息,随机拒绝通过"):
+            approve_id = approve_page.open_review_center()
+        with allure.step(f"随机审核id为{approve_id}请假信息,随机拒绝or通过"):
             random.choice([
                 lambda: approve_page.approve(approval_step=random.randint(1, 2), comment="同意"),
                 lambda: approve_page.reject(approval_step=random.randint(1, 2), comment="不同意"),
             ])()
+            db_connect.commit() # 提交事务
+        with allure.step("校验审批结果"):
+            status = db_connect.query("select check_status from oa_leaves where id = %s", (approve_id,))[0].get("check_status")
+            print(f"审批状态: {status}" if status else "审批状态未获取到")
+            if status == 1:
+                logger.error(f"审批状态不正确,实际状态: {status}")
+                allure.attach(
+                    logged_hr_driver.get_screenshot_as_png(),
+                    name="审批结果错误",
+                    attachment_type=allure.attachment_type.PNG
+                )

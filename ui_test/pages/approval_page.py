@@ -22,11 +22,15 @@ class ApprovalPage(BasePage):
     """经理审批页面"""
     APPROVE_FINISHED_BT = ("xpath", '//*[@id="checkBox"]/form/table/tbody/tr[5]/td[2]/div[1]') # 完成审批按钮
     APPROVE_COMMENT_INPUT = ("xpath", '//*[@id="checkBox"]/form/table/tbody/tr[7]/td[2]/textarea') # 审批意见输入框
-    BT_TEMPLATE = ("xpath", '//*[@id="checkBox"]/form/div/span[{action}]') # 审批按钮模板（action: 1: 完成审批；2: 转交下一审批人）
     NEXT_APPROVER_BT = ("xpath", '//*[@id="checkBox"]/form/table/tbody/tr[5]/td[2]/div[2]') # 下一个审批人按钮
     CHECK_UNAME = ("xpath", '//*[@id="checkBox"]/form/table/tbody/tr[5]/td[2]/div[3]/input[1]')#下一个审批人选择框
     NEXT_APPROVER_DEPT = ("xpath", '//*[@id="employeeDepament"]/div/div/div[2]/div[3]/div/div/span[2]') #下一个审批人部门
     NEXT_APPROVER_NAME = ("xpath", '//*[@id="employee"]/span') #下一个审批人姓名
+    _BT_XPATH = '//*[@id="checkBox"]/form/div/span[{action}]'
+
+    def _bt_locator(self, action: str) -> tuple:
+        """生成审批按钮定位器"""
+        return "xpath", self._BT_XPATH.format(action=action)
 
     def __init__(self, driver: WebDriver, db: Optional[DataBaseConnection] = None):
         super().__init__(driver)
@@ -54,6 +58,7 @@ class ApprovalPage(BasePage):
         approve_id = approve_id or self._fetch_pending_id()
         if not approve_id:
             raise ValueError("没有待审批的请假记录")
+        print("打开审批详情页，实际使用的请假记录 ID:", approve_id)
         self.open(self._review_url(approve_id))
         return approve_id    # 返回给调用方做后续断言
 
@@ -64,12 +69,12 @@ class ApprovalPage(BasePage):
         :return: None
         """
         if approval_step == 1:
-            self.wait_clickable(*self.APPROVE_FINISHED_BT)
+            self.wait_clickable(*self.APPROVE_FINISHED_BT).click()
         elif approval_step == 2:
-            self.wait_clickable(*self.NEXT_APPROVER_BT)
-            self.wait_clickable(*self.CHECK_UNAME)
-            self.wait_clickable(*self.NEXT_APPROVER_DEPT)
-            self.wait_clickable(*self.NEXT_APPROVER_NAME)
+            self.wait_clickable(*self.NEXT_APPROVER_BT).click()
+            self.wait_clickable(*self.CHECK_UNAME).click()
+            self.wait_clickable(*self.NEXT_APPROVER_DEPT).click()
+            self.wait_clickable(*self.NEXT_APPROVER_NAME).click()
         else:
             raise ValueError("无效的审批步骤")
 
@@ -83,7 +88,7 @@ class ApprovalPage(BasePage):
         """
         self._next_approver(approval_step)
         self.send_keys(*self.APPROVE_COMMENT_INPUT, keys=comment)
-        self.wait_clickable(*self.BT_TEMPLATE.format(action=1))
+        self.wait_clickable(*self._bt_locator('1')).click()
 
     def reject(self, approval_step: int = 1, comment: str = "不同意"):
         """
@@ -94,4 +99,4 @@ class ApprovalPage(BasePage):
         """
         self._next_approver(approval_step)
         self.send_keys(*self.APPROVE_COMMENT_INPUT, keys=comment)
-        self.wait_clickable(*self.BT_TEMPLATE.format(action=2))
+        self.wait_clickable(*self._bt_locator('2')).click()
