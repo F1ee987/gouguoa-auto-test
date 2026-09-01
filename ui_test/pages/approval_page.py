@@ -20,17 +20,34 @@ class LeaveStatus(IntEnum):
 
 class ApprovalPage(BasePage):
     """经理审批页面"""
-    APPROVE_FINISHED_BT = ("xpath", '//*[@id="checkBox"]/form/table/tbody/tr[5]/td[2]/div[1]') # 完成审批按钮
+    _FINISH_NEXT_XPATH = '//*[@id="checkBox"]/form/table/tbody/tr[5]/td[2]/div[{action}]'
     APPROVE_COMMENT_INPUT = ("xpath", '//*[@id="checkBox"]/form/table/tbody/tr[7]/td[2]/textarea') # 审批意见输入框
-    NEXT_APPROVER_BT = ("xpath", '//*[@id="checkBox"]/form/table/tbody/tr[5]/td[2]/div[2]') # 下一个审批人按钮
     CHECK_UNAME = ("xpath", '//*[@id="checkBox"]/form/table/tbody/tr[5]/td[2]/div[3]/input[1]')#下一个审批人选择框
     NEXT_APPROVER_DEPT = ("xpath", '//*[@id="employeeDepament"]/div/div/div[2]/div[3]/div/div/span[2]') #下一个审批人部门
     NEXT_APPROVER_NAME = ("xpath", '//*[@id="employee"]/span') #下一个审批人姓名
     _BT_XPATH = '//*[@id="checkBox"]/form/div/span[{action}]'
+    _CONFIRM_XPATH = '//*[@id="layui-layer{layer}"]/div[4]/a[1]'
+
+
+    #---------------------------- 定位器 -----------------
+    def _confirm_locator(self, action: str) -> tuple:
+        """
+        生成确认按钮定位器
+        :param action: "pass" | "reject"
+        """
+        layer = 1 if action == "pass" else 3
+        return "xpath", self._CONFIRM_XPATH.format(layer=layer)
 
     def _bt_locator(self, action: str) -> tuple:
         """生成审批按钮定位器"""
         return "xpath", self._BT_XPATH.format(action=action)
+
+    def _finish_or_next_locator(self, action: str) -> tuple:
+        """
+        :param action: "finish" | "next"
+        """
+        index = 1 if action == "finish" else 2
+        return "xpath", self._FINISH_NEXT_XPATH.format(action=index)
 
     def __init__(self, driver: WebDriver, db: Optional[DataBaseConnection] = None):
         super().__init__(driver)
@@ -53,6 +70,7 @@ class ApprovalPage(BasePage):
         """返回指定请假记录的审批页面 URL"""
         return f"{BASE_URL}/home/leaves/view?id={approve_id}"
 
+    #---------------------------- 操作 --------------------------
     def open_review_center(self, approve_id: Optional[int] = None) -> int:
         """打开审批详情页；不传 id 则自动取一条待审批记录，返回实际使用的 ID"""
         approve_id = approve_id or self._fetch_pending_id()
@@ -69,9 +87,9 @@ class ApprovalPage(BasePage):
         :return: None
         """
         if approval_step == 1:
-            self.wait_clickable(*self.APPROVE_FINISHED_BT).click()
+            self.wait_clickable(*self._finish_or_next_locator('finish')).click()
         elif approval_step == 2:
-            self.wait_clickable(*self.NEXT_APPROVER_BT).click()
+            self.wait_clickable(*self._finish_or_next_locator('next')).click()
             self.wait_clickable(*self.CHECK_UNAME).click()
             self.wait_clickable(*self.NEXT_APPROVER_DEPT).click()
             self.wait_clickable(*self.NEXT_APPROVER_NAME).click()
@@ -89,6 +107,7 @@ class ApprovalPage(BasePage):
         self._next_approver(approval_step)
         self.send_keys(*self.APPROVE_COMMENT_INPUT, keys=comment)
         self.wait_clickable(*self._bt_locator('1')).click()
+        self.wait_present(*self._confirm_locator('pass')).click()    # 确认按钮
 
     def reject(self, approval_step: int = 1, comment: str = "不同意"):
         """
@@ -100,3 +119,4 @@ class ApprovalPage(BasePage):
         self._next_approver(approval_step)
         self.send_keys(*self.APPROVE_COMMENT_INPUT, keys=comment)
         self.wait_clickable(*self._bt_locator('2')).click()
+        self.wait_present(*self._confirm_locator('reject')).click()    # 拒接确认按钮
