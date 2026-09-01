@@ -32,13 +32,15 @@ TEST_DATA, TEST_IDS = load_parametrized_csv(
 
 @allure.epic("🔌 接口测试")
 @allure.story("文件上传接口测试")
+@pytest.mark.api
 @pytest.mark.upload
 @pytest.mark.parametrize("file_type, relative_path, expected_code", TEST_DATA, ids=TEST_IDS)
 def test_upload_and_delete(
         file_type: str, relative_path: str, expected_code: str,
         admin_api_login: RequestHandle, logger: Logger,
 ):
-    allure.dynamic.title(f"上传文件 {file_type},期望结果: {"成功" if expected_code == "0" else "失败"}")
+    expect_text = "成功" if expected_code == "0" else "失败"
+    allure.dynamic.title(f"上传文件 {file_type},期望结果: {expect_text}")
     # --- 上传 ---
     with allure.step(f"上传文件 {file_type}"):
         file_path = str(PROJECT_ROOT) + relative_path

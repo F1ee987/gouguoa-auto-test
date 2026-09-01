@@ -9,6 +9,7 @@
 from datetime import datetime
 from random import choice
 from typing import Any, Dict
+import pytest
 from config.conf import APPROVE_URL, SUBMIT_CHECK
 from utils import Logger, RequestHandle
 from api_test.helpers.response import assert_api_success
@@ -16,6 +17,7 @@ import allure
 
 @allure.epic("🔌 接口测试")
 @allure.feature("请假审批全流程")
+@pytest.mark.api
 class TestLeaveApprovalFlow:
     """请假审批全流程。"""
 

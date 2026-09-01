@@ -36,7 +36,9 @@ class TestLogin:
         login_page: LoginPage,
         logger: Logger,
     ):
-        allure.dynamic.title(f"{test_id},预期结果: {"成功" if expected_code == '0' else '失败'}")
+        # 结果文案单独取值：f-string 内复用同类引号是 Python 3.12+ 语法，避免抬高版本门槛
+        expect_text = "成功" if expected_code == '0' else "失败"
+        allure.dynamic.title(f"{test_id},预期结果: {expect_text}")
         with allure.step(f"测试登录, 用户名: {username}"):
             logger.info(f"正在测试, 用户名: {username}")
             try:
@@ -48,7 +50,7 @@ class TestLogin:
                     attachment_type=allure.attachment_type.PNG
                 )
 
-        with allure.step(f"断言登录结果, 预期结果: {"成功" if expected_code == '0' else '失败'}"):
+        with allure.step(f"断言登录结果, 预期结果: {expect_text}"):
             # try:
             #     login_page.wait_visible('xpath',
             #                        '//*[@id="GouguApp"]/div/div[1]/div[2]/span[6]/ul/li/dl/dd[3]',

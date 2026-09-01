@@ -1,4 +1,5 @@
 """员工请假申请 UI 流程测试。"""
+import pytest
 import allure
 from selenium.webdriver.remote.webdriver import WebDriver
 from ui_test.conftest import HR_ACCOUNT
@@ -9,9 +10,10 @@ import random
 @allure.epic("🖥️ UI测试")
 @allure.feature("UI 申请审批全流程")
 @allure.severity(allure.severity_level.BLOCKER)
+@pytest.mark.ui
 class TestApprove:
     @allure.title("员工向hr发起请假申请")
-    def test_staff_approve_leave(self, logged_staff_driver: WebDriver, logger: Logger) -> None:
+    def test_staff_approve_leave(self, logged_staff_driver: WebDriver, logger: Logger, db_connect: DataBaseConnection) -> None:
         """普通员工从「办公审批 -> 审批申请」发起请假申请并提交。"""
         with allure.step("员工打开办公审批页面"):
             apply_page = ApproveApplyPage(logged_staff_driver)
@@ -37,6 +39,9 @@ class TestApprove:
                     name="表单提交错误",
                     attachment_type=allure.attachment_type.PNG
                 )
+            else:
+                logger.info("提交成功")
+                db_connect.commit() # 提交事务
 
     @allure.title("人事经理审核请假信息")
     def test_hr_approve(self, logged_hr_driver: WebDriver, logger: Logger, db_connect: DataBaseConnection):
@@ -47,15 +52,16 @@ class TestApprove:
         with allure.step("进入审批中心"):
             approve_id = approve_page.open_review_center()
         with allure.step(f"随机审核id为{approve_id}请假信息,随机拒绝or通过"):
+            approval_step = random.randint(1, 2)
             random.choice([
-                lambda: approve_page.approve(approval_step=random.randint(1, 2), comment="同意"),
-                lambda: approve_page.reject(approval_step=random.randint(1, 2), comment="不同意"),
+                lambda: approve_page.approve(approval_step=approval_step, comment="同意"),
+                lambda: approve_page.reject(approval_step=approval_step, comment="不同意"),
             ])()
             db_connect.commit() # 提交事务
         with allure.step("校验审批结果"):
             status = db_connect.query("select check_status from oa_leaves where id = %s", (approve_id,))[0].get("check_status")
             print(f"审批状态: {status}" if status else "审批状态未获取到")
-            if status == 1:
+            if status == 1 and approval_step == 1:
                 logger.error(f"审批状态不正确,实际状态: {status}")
                 allure.attach(
                     logged_hr_driver.get_screenshot_as_png(),
@@ -63,4 +69,5 @@ class TestApprove:
                     attachment_type=allure.attachment_type.PNG
                 )
             else:
-                logger.info(f"审批结果正确,实际状态: {"审核通过" if status == 2 else "审核拒绝"}")
+                status_text = "审核通过" if status == 2 else "审核拒绝"
+                logger.info(f"审批结果正确,实际状态: {status_text}")

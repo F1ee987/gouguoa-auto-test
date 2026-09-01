@@ -18,6 +18,7 @@ import allure
 
 @allure.epic("🔌 接口测试")
 @allure.feature("RBAC 权限控制")
+@pytest.mark.api
 class TestRbac:
     """RBAC 权限控制测试套件。"""
 
