@@ -3,6 +3,7 @@ UI 测试夹具：提供浏览器驱动实例（会话级复用，测试结束�
 """
 import pytest
 from selenium.webdriver.remote.webdriver import WebDriver
+from ui_test.pages import LoginPage
 
 @pytest.fixture(scope='session')
 def driver():
@@ -18,7 +19,7 @@ def driver():
     browser.quit()
 
 @pytest.fixture(scope='function')
-def logged_in_driver(driver: WebDriver):
+def logged_staff_driver(driver: WebDriver):
     """返回已登录状态下的页面,基于普通员工登录
 
     Args:
@@ -27,7 +28,19 @@ def logged_in_driver(driver: WebDriver):
     Yields:
         _type_: 已登录页面
     """
-    from ui_test.pages import LoginPage
     login_page = LoginPage(driver)
     login_page.login("zhousha", "123456")
+    yield driver
+
+@pytest.fixture(scope='function')
+def logged_hr_driver(driver: WebDriver):
+    """返回已登录状态下的页面,基于hr登录
+    Args:
+        driver (WebDriver): 浏览器驱动
+
+    Yields:
+        _type_: 已登录页面
+    """
+    login_page = LoginPage(driver)
+    login_page.login("renshi", "123456")
     yield driver

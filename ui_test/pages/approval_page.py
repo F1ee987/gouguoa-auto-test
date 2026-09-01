@@ -20,9 +20,13 @@ class LeaveStatus(IntEnum):
 
 class ApprovalPage(BasePage):
     """经理审批页面"""
-    APPROVE_FINISHED_BT = ("xpath", '//*[@id="checkBox"]/form/table/tbody/tr[5]/td[2]/div[1]')
-    APPROVE_COMMENT_INPUT = ("xpath", '//*[@id="checkBox"]/form/table/tbody/tr[7]/td[2]/textarea')
-    BT_TEMPLATE = ("xpath", '//*[@id="checkBox"]/form/div/span[{action}]')
+    APPROVE_FINISHED_BT = ("xpath", '//*[@id="checkBox"]/form/table/tbody/tr[5]/td[2]/div[1]') # 完成审批按钮
+    APPROVE_COMMENT_INPUT = ("xpath", '//*[@id="checkBox"]/form/table/tbody/tr[7]/td[2]/textarea') # 审批意见输入框
+    BT_TEMPLATE = ("xpath", '//*[@id="checkBox"]/form/div/span[{action}]') # 审批按钮模板（action: 1: 完成审批；2: 转交下一审批人）
+    NEXT_APPROVER_BT = ("xpath", '//*[@id="checkBox"]/form/table/tbody/tr[5]/td[2]/div[2]') # 下一个审批人按钮
+    CHECK_UNAME = ("xpath", '//*[@id="checkBox"]/form/table/tbody/tr[5]/td[2]/div[3]/input[1]')#下一个审批人选择框
+    NEXT_APPROVER_DEPT = ("xpath", '//*[@id="employeeDepament"]/div/div/div[2]/div[3]/div/div/span[2]') #下一个审批人部门
+    NEXT_APPROVER_NAME = ("xpath", '//*[@id="employee"]/span') #下一个审批人姓名
 
     def __init__(self, driver: WebDriver, db: Optional[DataBaseConnection] = None):
         super().__init__(driver)
@@ -53,14 +57,41 @@ class ApprovalPage(BasePage):
         self.open(self._review_url(approve_id))
         return approve_id    # 返回给调用方做后续断言
 
-    def approve(self, comment: str = "同意"):
-        """通过请假申请"""
-        self.wait_clickable(*self.APPROVE_FINISHED_BT)
+    def _next_approver(self, approval_step: int = 1) -> None:
+        """
+        是否继续审批，审批结束或审批通过并转交下一审批人
+        :param approval_step: 审批步骤（1：审批结束；2：审批通过并转交下一审批人）
+        :return: None
+        """
+        if approval_step == 1:
+            self.wait_clickable(*self.APPROVE_FINISHED_BT)
+        elif approval_step == 2:
+            self.wait_clickable(*self.NEXT_APPROVER_BT)
+            self.wait_clickable(*self.CHECK_UNAME)
+            self.wait_clickable(*self.NEXT_APPROVER_DEPT)
+            self.wait_clickable(*self.NEXT_APPROVER_NAME)
+        else:
+            raise ValueError("无效的审批步骤")
+
+    def approve(self, approval_step: int = 1, comment: str = "同意"):
+        """
+        审批通过请假申请
+
+        :param approval_step: 审批步骤（1：审批结束；2：审批通过并转交下一审批人）
+        :param comment: 审批意见，允许为空字符串
+        :return: None
+        """
+        self._next_approver(approval_step)
         self.send_keys(*self.APPROVE_COMMENT_INPUT, keys=comment)
         self.wait_clickable(*self.BT_TEMPLATE.format(action=1))
 
-    def reject(self, comment: str = "不同意"):
-        """拒绝请假申请"""
-        self.wait_clickable(*self.APPROVE_FINISHED_BT)
+    def reject(self, approval_step: int = 1, comment: str = "不同意"):
+        """
+        拒绝请假申请
+        :param approval_step: 审批步骤（1：审批结束；2：审批通过并转交下一审批人）
+        :param comment: 审批意见，允许为空字符串
+        :return: None
+        """
+        self._next_approver(approval_step)
         self.send_keys(*self.APPROVE_COMMENT_INPUT, keys=comment)
         self.wait_clickable(*self.BT_TEMPLATE.format(action=2))
