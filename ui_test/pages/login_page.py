@@ -5,7 +5,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from config.conf import BASE_URL, CAPTCHA_DIR
 from utils import CaptchaSolver, delete_cache
 from ui_test.pages import BasePage
-
+from utils import Logger
 
 class LoginPage(BasePage):
     """登录页操作封装。"""
@@ -25,6 +25,7 @@ class LoginPage(BasePage):
         password: str,
         retries: int = 3,
         human_typing: bool = False,
+        logger: Logger = None
     ) -> None:
         """执行完整登录流程。
 
@@ -35,6 +36,7 @@ class LoginPage(BasePage):
                      避免个别噪点导致整条用例失败。
             human_typing: 是否逐字符输入（每个字符随机停顿）。模拟人工输入会显著
                           拖慢登录，仅前端有输入行为校验时才需要，默认关闭。
+            logger: 日志对象，用于记录日志信息。
         """
         for attempt in range(1, retries + 1):
             try:
@@ -43,7 +45,7 @@ class LoginPage(BasePage):
             except Exception as error:
                 if attempt == retries:
                     raise
-                print(f"⚠️ 第 {attempt} 次登录失败（{error}），刷新验证码重试")
+                logger.warning(f"⚠️ 第 {attempt} 次登录失败（{error}），刷新验证码重试")
 
     def _do_login(self, username: str, password: str, human_typing: bool = False) -> None:
         """单次登录尝试：打开页面 -> 识别验证码 -> 填写并提交。"""

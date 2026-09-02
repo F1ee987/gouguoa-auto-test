@@ -42,7 +42,7 @@ class TestLogin:
         with allure.step(f"测试登录, 用户名: {username}"):
             logger.info(f"正在测试, 用户名: {username}")
             try:
-                login_page.login(username, password)
+                login_page.login(username, password, logger=logger)
             except Exception:
                 allure.attach(
                     login_page.get_screenshot_as_png,
@@ -51,15 +51,6 @@ class TestLogin:
                 )
 
         with allure.step(f"断言登录结果, 预期结果: {expect_text}"):
-            # try:
-            #     login_page.wait_visible('xpath',
-            #                        '//*[@id="GouguApp"]/div/div[1]/div[2]/span[6]/ul/li/dl/dd[3]',
-            #                        timeout=0.5,
-            #                        poll_frequency=0.1
-            #     )
-            #     login_success = True
-            # except TimeoutException:
-            #     login_success = False
             login_page.force_wait(1.5)
             current_url = login_page.current_url
             login_success = "/home/login/index.html" not in current_url
