@@ -61,31 +61,38 @@ class DataBaseConnection:
             return None
 
     def query(
-        self,
-        sql: str,
-        params: Optional[Tuple[Any, ...]] = None,
-        limit: int = 0,
+            self,
+            sql: str,
+            params: Optional[Tuple[Any, ...]] = None,
+            limit: int = 0,
     ) -> Any:
-        """执行 SQL 查询，默认返回全部结果。
-
-        Args:
-            sql: SQL 查询语句（使用 %s 占位符）。
-            params: 查询参数元组，用于参数化查询。
-            limit: 大于 0 时只取前 N 条（fetchmany）。
-        Returns:
-            查询结果列表（成功）或 None（失败 / 未连接）。
-        """
+        """执行 SQL 查询，默认返回全部结果。"""
         if not self.conn:
-            self.logger.error("❌ 数据库连接未建立或已关闭，无法执行查询。")
+            self.logger.error("❌ 数据库连接未建立或已关闭，无法执行查询")
             return None
+
+        self.logger.debug(f"🔍 执行查询 | SQL: {sql} | 参数: {params}")
+
         try:
             with self.conn.cursor() as cursor:
                 cursor.execute(sql, params)
-                results = cursor.fetchmany(limit) if limit > 0 else cursor.fetchall()
-                self.logger.info(f"✅ SQL 查询成功，结果数量：{len(results) if results else 0}")
+
+                if limit > 0:
+                    results = cursor.fetchmany(limit)
+                else:
+                    results = cursor.fetchall()
+
+                row_count = len(results) if results else 0
+
+                if row_count == 0:
+                    self.logger.warning(f"⚠️ 查询无结果 | SQL: {sql} | 参数: {params}")
+                else:
+                    self.logger.debug(f"✅ 查询成功 | 返回 {row_count} 行")
+
                 return results
+
         except pymysql.MySQLError as e:
-            self.logger.error(f"❌ SQL 查询失败：{sql[:100]}...，错误详情：{e}")
+            self.logger.error(f"❌ 查询失败 | SQL: {sql} | 参数: {params} | 错误: {e}")
             return None
 
     def commit(self) -> None:
@@ -111,8 +118,8 @@ if __name__ == "__main__":
     from config.conf import DB
     from utils import Logger
 
-    logger = Logger(__file__)
+    logger = Logger(__name__)
     db = DataBaseConnection(logger)
     db.connect(**DB)
-    print(db.query('SELECT count(username) FROM oa_admin'))
+    print(db.query('SELECT username FROM oa_admin'))
     db.close()

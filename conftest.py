@@ -22,6 +22,7 @@ def timer():
 def logger() -> Generator[Logger]:
     """全局日志记录器（会话级复用）。"""
     log = Logger(__name__)
+    log.set_level('INFO')
     yield log
     print("日志记录关闭")
 
