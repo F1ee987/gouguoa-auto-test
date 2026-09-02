@@ -10,14 +10,17 @@ from datetime import datetime
 from random import uniform
 import os
 from time import sleep
-from typing import Optional
-from selenium.common.exceptions import NoSuchElementException
+from typing import List, Optional
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from config.conf import PROJECT_ROOT
+
+# 「元素可能不存在」这类探测场景的等待上限，避免为确认不存在而空等
+PROBE_TIMEOUT = 0.3
 
 
 class BasePage:
@@ -79,6 +82,65 @@ class BasePage:
             EC.presence_of_element_located((by, value)),
             message=f"元素不存在: {by}={value}，等待了 {timeout}s"
         )
+
+    def wait_absent(self, by: str, value: str, timeout: float = 5) -> bool:
+        """等待元素消失（不可见或已移除），超时返回 False 而不抛错。
+
+        用于「面板已关闭 / 弹层已消失」这类过渡态判断，代替固定 sleep。
+        """
+        try:
+            return WebDriverWait(self._driver, timeout).until(
+                EC.invisibility_of_element_located((by, value))
+            )
+        except TimeoutException:
+            return False
+
+    def find_elements_safe(self, by: str, value: str) -> List[WebElement]:
+        """探测式批量查找：元素不存在时快速返回空列表，不做长时间等待。
+
+        直接调用 driver.find_elements 在元素不存在时同样会走完整轮询周期，
+        这里用极短超时先探一次，命中才真正取元素。
+        """
+        try:
+            WebDriverWait(self._driver, PROBE_TIMEOUT).until(
+                EC.presence_of_element_located((by, value))
+            )
+        except TimeoutException:
+            return []
+        return self._driver.find_elements(by, value)
+
+    def wait_image_loaded(self, element: WebElement, timeout: float = 5) -> bool:
+        """等待 <img> 内容真正加载完成，超时返回 False。
+
+        启用 eager 页面加载策略后 `get()` 不等子资源，img 元素可能已可见
+        但内容还是空的，此时截图会得到空白图，OCR 必然失败。
+        """
+        try:
+            return WebDriverWait(self._driver, timeout).until(
+                lambda driver: driver.execute_script(
+                    "return arguments[0].complete && arguments[0].naturalWidth > 0;",
+                    element,
+                )
+            )
+        except TimeoutException:
+            return False
+
+    def wait_attribute(
+        self, by: str, value: str, attribute: str = "value", timeout: float = 5
+    ) -> str:
+        """等待元素指定属性变为非空并返回其值（如日期控件回填结果）。"""
+        def _non_empty(driver: WebDriver) -> str:
+            element = driver.find_element(by, value)
+            current = element.get_attribute(attribute) or ""
+            return current if current.strip() else False  # type: ignore[return-value]
+
+        try:
+            return WebDriverWait(self._driver, timeout).until(
+                _non_empty,
+                message=f"元素属性 {attribute} 始终为空: {by}={value}，等待了 {timeout}s",
+            )
+        except TimeoutException:
+            return ""
 
     # --------------------------- 元素操作 ---------------------------
     def find_element(self, by: str, value: str) -> WebElement:

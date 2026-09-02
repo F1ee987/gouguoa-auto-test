@@ -19,7 +19,13 @@ class LoginPage(BasePage):
         super().__init__(driver)
         self.solver = CaptchaSolver()  # 验证码识别器
 
-    def login(self, username: str, password: str, retries: int = 3) -> None:
+    def login(
+        self,
+        username: str,
+        password: str,
+        retries: int = 3,
+        human_typing: bool = False,
+    ) -> None:
         """执行完整登录流程。
 
         Args:
@@ -27,17 +33,19 @@ class LoginPage(BasePage):
             password: 登录密码。
             retries: 最大尝试次数。验证码 OCR 偶发识别失败时刷新验证码重试，
                      避免个别噪点导致整条用例失败。
+            human_typing: 是否逐字符输入（每个字符随机停顿）。模拟人工输入会显著
+                          拖慢登录，仅前端有输入行为校验时才需要，默认关闭。
         """
         for attempt in range(1, retries + 1):
             try:
-                self._do_login(username, password)
+                self._do_login(username, password, human_typing)
                 return
             except Exception as error:
                 if attempt == retries:
                     raise
                 print(f"⚠️ 第 {attempt} 次登录失败（{error}），刷新验证码重试")
 
-    def _do_login(self, username: str, password: str) -> None:
+    def _do_login(self, username: str, password: str, human_typing: bool = False) -> None:
         """单次登录尝试：打开页面 -> 识别验证码 -> 填写并提交。"""
         self.open(self.LOGIN_PAGE_URL)
 
@@ -46,18 +54,21 @@ class LoginPage(BasePage):
         password_input = self.wait_present("name", "password")
         captcha_input = self.wait_present("name", "captcha")
         login_button = self.wait_present("xpath", "//*[@id='login-submit']")
+        # 验证码是异步加载的图片：既要等元素可见，也要等图片内容加载完成，
+        # 否则 eager 加载策略下会截到空白图，OCR 必然失败。
+        captcha_element = self.wait_visible("xpath", self.CAPTCHA_IMG_XPATH)
+        self.wait_image_loaded(captcha_element)
 
         if not all([username_input, password_input, captcha_input, login_button]):
             raise Exception("❌ 登录页面元素未找到，无法执行登录操作。")
 
         # 截取页面验证码图片用于 OCR
-        captcha_element = self.find_element("xpath", self.CAPTCHA_IMG_XPATH)
         image_path = str(CAPTCHA_DIR / self.CAPTCHA_IMAGE_NAME)
         self.screenshot(image_path, captcha_element)
 
-        # 填写账号密码（模拟人工输入）
-        self.send_keys(element=username_input, keys=username, input_wait=True)
-        self.send_keys(element=password_input, keys=password, input_wait=True)
+        # 填写账号密码
+        self.send_keys(element=username_input, keys=username, input_wait=human_typing)
+        self.send_keys(element=password_input, keys=password, input_wait=human_typing)
 
         # 识别验证码（可能失败），无论成功与否都清理临时图片
         try:

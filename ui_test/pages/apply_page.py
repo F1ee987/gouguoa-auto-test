@@ -17,6 +17,7 @@
 3. 表单内所有字段一律用 `name` 或 `lay-filter` 等**语义化属性**定位，
    不使用 `/html/body/...` 这类绝对 xpath（页面结构一变即失效）。
 """
+import time
 from typing import Optional, Tuple
 from config.conf import BASE_URL
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -52,6 +53,8 @@ class ApproveApplyPage(BasePage):
     # laydate 底部按钮，用 lay-type 属性定位，不依赖层级
     LAYDATE_NOW_BTN = ("css selector", "span[lay-type='now']")
     LAYDATE_CONFIRM_BTN = ("css selector", "span[lay-type='confirm']")
+    # 时间面板本体，用于判断面板是否已关闭（代替固定 sleep）
+    LAYDATE_PANEL = ("css selector", ".layui-laydate")
 
     LEAVE_DURATION_LOC = ("name", "duration")      # 请假天数
     LEAVE_REASON_LOC = ("name", "reason")          # 请假事由
@@ -81,6 +84,10 @@ class ApproveApplyPage(BasePage):
     )
 
     SUBMIT_BTN_LOC = ("css selector", "button[lay-filter='webform']")  # 立即提交
+    # 提交后的结果提示层
+    RESULT_TIP = ("css selector", ".layui-layer-content")
+    # 「选择员工」弹层
+    EMPLOYEE_LAYER = ("css selector", "#employee")
 
     def __init__(self, driver: WebDriver) -> None:
         super().__init__(driver)
@@ -89,8 +96,8 @@ class ApproveApplyPage(BasePage):
     def open_approve_center(self) -> None:
         """打开审批中心（审批申请入口所在页）。"""
         self.open(self.APPROVE_CENTER_URL)
-        # 等待类型卡片渲染完成
-        self.wait_present(
+        # 等待类型卡片渲染完成（可见即含存在语义，无需再等一次 present）
+        self.wait_visible(
             *self._format_locator(self.TYPE_CARD_LOC, name="请假"), timeout=10
         )
 
@@ -130,17 +137,21 @@ class ApproveApplyPage(BasePage):
         input_element.click()
 
         self.wait_clickable(*self.LAYDATE_NOW_BTN, timeout=5).click()
-        self.force_wait(0.6)
 
-        confirm_buttons = self._driver.find_elements(*self.LAYDATE_CONFIRM_BTN)
+        # 「现在」通常会回填并直接关闭面板；若面板仍在则补点「确定」。
+        # 用探测式查找判断，元素不存在时快速返回，不为「确认不存在」空等。
+        confirm_buttons = self.find_elements_safe(*self.LAYDATE_CONFIRM_BTN)
         if confirm_buttons:  # 面板未自动关闭时才补点「确定」
             try:
                 confirm_buttons[0].click()
             except Exception:  # 面板正在关闭，忽略点击异常
                 pass
-            self.force_wait(0.5)
 
-        value = self.find_element(*input_loc).get_attribute("value")
+        # 等面板关闭，再等日期回填。两者都是完成信号，比固定 sleep 快；
+        # 超时上限刻意压低，避免信号未如期发生时反而空等更久。
+        self.wait_absent(*self.LAYDATE_PANEL, timeout=1.5)
+
+        value = self.wait_attribute(*input_loc, timeout=5)
         if not value:
             raise AssertionError(f"日期未回填成功: {input_loc}")
         return value
@@ -165,14 +176,16 @@ class ApproveApplyPage(BasePage):
         self.wait_clickable(
             "xpath", f"{wrapper}//div[contains(@class,'layui-select-title')]", timeout=10
         ).click()
-        self.force_wait(0.5)
 
         option = self.wait_clickable(
             "xpath", f"{wrapper}//dd[@lay-value='{option_value}']", timeout=10
         )
         text = option.text.strip()
         option.click()
-        self.force_wait(0.4)
+        # 等下拉收起（展开时容器带 layui-form-selected），而不是睡固定时长
+        self.wait_absent(
+            "xpath", f"{wrapper}[contains(@class,'layui-form-selected')]", timeout=1.5
+        )
         return text
 
     def choose_approver(self, department: str = "人事部", name: Optional[str] = None) -> str:
@@ -186,11 +199,14 @@ class ApproveApplyPage(BasePage):
             回填到审批人输入框的姓名。
         """
         self.wait_clickable(*self.APPROVER_INPUT_LOC, timeout=10).click()
-        self.force_wait(1.2)
+        # 等「选择员工」层渲染完成，而不是固定 sleep
+        self.wait_visible(*self.EMPLOYEE_LAYER, timeout=5)
 
         dept_locator = self._format_locator(self.DEPT_TREE_ITEM_LOC, dept=department)
         self.wait_clickable(*dept_locator, timeout=10).click()
-        self.force_wait(1.2)
+        # 切换部门后员工列表异步刷新，而刷新前后元素定位表达式相同，
+        # 显式等待无法区分「新列表」与「旧列表」，留一个短缓冲避免选中旧数据。
+        self.force_wait(0.5)
 
         if name:
             emp_locator = self._format_locator(self.EMPLOYEE_ITEM_LOC, name=name)
@@ -202,9 +218,9 @@ class ApproveApplyPage(BasePage):
         employee = self.wait_clickable(*emp_locator, timeout=10)
         approver_name = employee.text.strip()
         employee.click()
-        self.force_wait(0.8)
 
-        filled = self.find_element(*self.APPROVER_INPUT_LOC).get_attribute("value")
+        # 等审批人回填到输入框（完成信号），而不是睡固定时长
+        filled = self.wait_attribute(*self.APPROVER_INPUT_LOC, timeout=5)
         if not filled:
             raise AssertionError("审批人未回填，请检查选择员工弹出层是否成功关闭")
         return filled or approver_name
@@ -234,11 +250,11 @@ class ApproveApplyPage(BasePage):
         self._pick_current_time(self.END_DATE_INPUT_LOC)
 
         # 请假天数与事由
-        duration_input = self.find_element(*self.LEAVE_DURATION_LOC)
+        duration_input = self.wait_present(*self.LEAVE_DURATION_LOC, timeout=5)
         duration_input.clear()
         self.send_keys(element=duration_input, keys=duration)
         self.send_keys(
-            element=self.find_element(*self.LEAVE_REASON_LOC), keys=reason
+            element=self.wait_present(*self.LEAVE_REASON_LOC, timeout=5), keys=reason
         )
 
         # 请假类型 / 审批流程（均为 layui 下拉）
@@ -254,14 +270,43 @@ class ApproveApplyPage(BasePage):
         # 审批人
         self.choose_approver(department=department, name=approver)
 
-    def submit(self) -> str:
-        """点击「立即提交」，返回提交后的提示文本（无弹出层时返回空串）。"""
-        self.wait_clickable(*self.SUBMIT_BTN_LOC, timeout=10).click()
-        self.force_wait(2.5)
+    def current_tip(self) -> str:
+        """读取当前可见的最上层提示文本（无提示时返回空串）。
+
+        页面可能残留历史提示层，故按 z-index 取最上层且可见的那个。
+        """
         return self._driver.execute_script(
-            "const tip = document.querySelector('.layui-layer-content');"
-            "return tip ? tip.innerText.trim() : '';"
+            "const items = [...document.querySelectorAll('.layui-layer-content')]"
+            "  .filter(el => {"
+            "    const cs = getComputedStyle(el);"
+            "    if (cs.display === 'none' || cs.visibility === 'hidden') return false;"
+            "    return el.getClientRects().length > 0;"
+            "  });"
+            "if (!items.length) return '';"
+            "items.sort((a, b) => {"
+            "  const za = parseInt(getComputedStyle(a.closest('.layui-layer') || a).zIndex) || 0;"
+            "  const zb = parseInt(getComputedStyle(b.closest('.layui-layer') || b).zIndex) || 0;"
+            "  return zb - za;"
+            "});"
+            "return items[0].innerText.trim();"
         )
+
+    def submit(self, timeout: float = 3.0) -> str:
+        """点击「立即提交」，返回本次提交产生的新提示文本。
+
+        提交是异步请求。这里以「出现与提交前不同的提示」为完成信号，
+        一出现就立即返回，比固定 sleep 快；无新提示时最多等 timeout 秒返回空串。
+        """
+        before = self.current_tip()
+        self.wait_clickable(*self.SUBMIT_BTN_LOC, timeout=10).click()
+
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            tip = self.current_tip()
+            if tip and tip != before:
+                return tip
+            time.sleep(0.2)
+        return ""
 
     # ---------------------------- 工具方法 ----------------------------
     @staticmethod

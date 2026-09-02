@@ -16,7 +16,7 @@ def timer():
     print("开始运行>>")
     yield
     end_time = time()
-    print(f"运行总时长>>{end_time - start_time:.5f} seconds", flush=True)
+    print(f"运行总时长>>{end_time - start_time:.4f} seconds", flush=True)
 
 @pytest.fixture(scope='session')
 def logger() -> Generator[Logger]:
@@ -25,9 +25,9 @@ def logger() -> Generator[Logger]:
     yield log
     print("日志记录关闭")
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='class')
 def db_connect(logger: Logger) -> Generator[DataBaseConnection]:
-    """数据库连接（会话级复用，连接一次，测试结束统一关闭）。"""
+    """数据库连接"""
     connection = DataBaseConnection(logger)
     connection.connect(**DB)
     yield connection

@@ -21,6 +21,10 @@ logger = Logger(__name__)
 class CaptchaSolver:
     """验证码识别与计算器（仅支持加法算式）。"""
 
+    # OCR 引擎在所有实例间共享：模型只需加载一次，
+    # 否则每条用例实例化一次就重新加载一遍模型，白白拖慢登录。
+    _shared_ocr = None
+
     # OCR 常见误识别字符 -> 正确字符 的纠正映射
     CHAR_CORRECTION_MAP = {
         '>': '7', 'q': '9', 'o': '0', ']': '1', '之': '7',
@@ -40,7 +44,9 @@ class CaptchaSolver:
     RESULT_UPPER_BOUND = 40
 
     def __init__(self):
-        self._ocr = ddddocr.DdddOcr(show_ad=False)
+        if CaptchaSolver._shared_ocr is None:
+            CaptchaSolver._shared_ocr = ddddocr.DdddOcr(show_ad=False)
+        self._ocr = CaptchaSolver._shared_ocr
 
     def solve(self, image_path: str) -> int:
         """识别验证码图片并返回算式计算结果。
@@ -80,7 +86,6 @@ class CaptchaSolver:
         expression = re.sub(r'\s+', '', corrected)
         # 3) 丢弃剩余无法参与计算的杂点符号，避免直接解析崩溃
         expression = re.sub(r'[^0-9+]', '', expression)
-        logger.info(f"清洗后表达式: {expression}")
         return expression
 
     def _evaluate_addition(self, expression: str, image_bytes: Optional[bytes] = None) -> int:
@@ -111,7 +116,6 @@ class CaptchaSolver:
             logger.warning(f"❌ 计算结果 {calc_result} 超出预期范围，可能存在识别偏差")
             self._dump_error_image(expression, image_bytes)
 
-        logger.info(f"验证码计算结果: {left} + {right} = {calc_result}")
         return calc_result
 
     @staticmethod

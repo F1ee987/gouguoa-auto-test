@@ -90,11 +90,13 @@ class DataBaseConnection:
 
     def commit(self) -> None:
         """提交数据库事务。"""
-        if self.conn:
+        if self.conn is None:
+            raise RuntimeError("数据库连接未建立，请先调用 connect()")
+        try:
             self.conn.commit()
-            self.logger.info("✅ 数据库事务已提交")
-        else:
-            self.logger.error("❌ 数据库连接未建立或已关闭，无法提交。")
+        except pymysql.err.OperationalError as e:
+            self.logger.error(f"commit 失败（连接可能已断开）: {e}")
+            raise
 
     def close(self) -> None:
         """关闭数据库连接。"""

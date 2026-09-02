@@ -39,9 +39,9 @@ class TestApprove:
                     name="表单提交错误",
                     attachment_type=allure.attachment_type.PNG
                 )
+                pytest.fail("表单提交错误")
             else:
                 logger.info("提交成功")
-                db_connect.commit() # 提交事务
 
     @allure.title("人事经理审核请假信息")
     def test_hr_approve(self, logged_hr_driver: WebDriver, logger: Logger, db_connect: DataBaseConnection):
@@ -59,15 +59,31 @@ class TestApprove:
             ])()
             db_connect.commit() # 提交事务
         with allure.step("校验审批结果"):
-            status = db_connect.query("select check_status from oa_leaves where id = %s", (approve_id,))[0].get("check_status")
-            print(f"审批状态: {status}" if status else "审批状态未获取到")
-            if status == 1 and approval_step == 1:
-                logger.error(f"审批状态不正确,实际状态: {status}")
-                allure.attach(
-                    logged_hr_driver.get_screenshot_as_png(),
-                    name="审批结果错误",
-                    attachment_type=allure.attachment_type.PNG
-                )
+            result = db_connect.query("""
+                    SELECT l.check_status, l.check_uids, a.name as next_approver_name
+                    FROM oa_leaves l
+                    LEFT JOIN oa_admin a ON l.check_uids = a.id
+                    WHERE l.id = %s
+                """,
+            (approve_id,)
+            )
+            row = result[0]
+            status = row["check_status"]
+            next_approver_name = row["next_approver_name"]
+            logger.info(f"审批状态: {status}" if status else "审批状态未获取到")
+            if approval_step == 1: # 只审批一次
+                if status == 1:
+                    logger.error(f"审批状态不正确,实际状态: {status}")
+                    allure.attach(
+                        logged_hr_driver.get_screenshot_as_png(),
+                        name="审批结果错误",
+                        attachment_type=allure.attachment_type.PNG
+                    )
+                    pytest.fail(f"审批状态不正确,实际状态: {status}")
+                else:
+                    logger.info("审批通过" if status == 2 else "审批拒绝")
             else:
-                status_text = "审核通过" if status == 2 else "审核拒绝"
-                logger.info(f"审批结果正确,实际状态: {status_text}")
+                if status == 2:
+                    logger.info(f"当前审批通过，审批交给下级{next_approver_name}")
+                else:
+                    logger.info(f"当前审批拒绝，审批交给下级{next_approver_name}")

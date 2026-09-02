@@ -137,6 +137,13 @@ cp .env.example .env
 | `GOUGUOA_DB_PASSWORD` | 数据库密码 | `root` |
 | `GOUGUOA_DB_NAME` | 数据库名 | `oa` |
 
+**UI 运行相关**（仅影响 Selenium，不经过 `AppSettings`）：
+
+| 环境变量 | 说明 | 默认值 |
+| --- | --- | --- |
+| `GOUGUOA_CHROMEDRIVER` | chromedriver 完整路径。不指定时会按顺序探测常见安装位置；都没命中才交给 Selenium Manager 联网解析，**内网 / 代理环境下会明显拖慢启动** | 自动探测 `D:/Python314/chromedriver.exe` 等 |
+| `GOUGUOA_PAGE_LOAD_STRATEGY` | 页面加载策略。`eager` 等 DOMContentLoaded 即返回，每页可省 1~2s；页面渲染不稳定时设为 `normal` 回退 | `eager` |
+
 > 约定：所有接口地址由 `BASE_URL` 拼接（集中定义在 `config/conf.py`）；验证码接口地址由 `get_captcha_url()` 动态生成（附时间戳防缓存），避免复用过期验证码。
 
 ## 运行测试
