@@ -80,7 +80,7 @@ def main() -> None:
     targets = resolve_targets(args)
     exit_code = run_tests(targets)
     # 测试结束后生成 Allure HTML 报告（需已安装 allure 命令行）
-    os.system("allure generate ./reports/temps -o ./reports/html --clean")
+    os.system("allure generate ./reports/allure-results -o ./reports/html --clean")
     raise SystemExit(exit_code)
 
 

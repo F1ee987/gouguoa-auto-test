@@ -84,7 +84,7 @@ gouguoa-auto-test/
 │   ├── conf.py                # 配置中心（pydantic-settings，GOUGUOA_ 前缀）
 │   └── accounts.csv           # 测试账号数据（角色 / 账号 / 密码 / 预期返回码）
 ├── docs/                      # 排查素材：OCR 识别失败时自动转储的验证码原图
-├── reports/                   # 测试报告产物（Allure temps / html）
+├── reports/                   # 测试报告产物（Allure allure-results / html）
 ├── .env.example               # 环境变量模板（提交入库，真实 .env 被忽略）
 ├── .gitignore                 # Git 忽略规则
 ├── conftest.py                # pytest 全局夹具（计时器 / 日志 / 会话级数据库连接）
@@ -178,14 +178,14 @@ pytest api_test/test_cases/test_api_login.py::test_login_with_ocr_captcha   # �
 
 ## 测试报告
 
-`pytest.ini` 已配置 `--alluredir=./reports/temps`，运行时自动采集结果：
+`pytest.ini` 已配置 `--alluredir=./reports/allure-results`，运行时自动采集结果：
 
 ```bash
 # 1) 运行测试并收集结果
 pytest
 
 # 2) 生成并打开 HTML 报告（需安装 Allure 命令行）
-allure generate ./reports/temps -o ./reports/html --clean
+allure generate ./reports/allure-results -o ./reports/html --clean
 allure open ./reports/html
 ```
 
@@ -266,7 +266,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: allure-results
-          path: reports/temps
+          path: reports/allure-results
 ```
 
 > 提示：真实地址与数据库密码请配置为仓库 **Secrets**，不要在 YAML 中明文出现。

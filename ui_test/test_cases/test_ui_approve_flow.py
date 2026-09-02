@@ -39,9 +39,9 @@ class TestApprove:
                     name="表单提交错误",
                     attachment_type=allure.attachment_type.PNG
                 )
-                pytest.fail("表单提交错误")
+                pytest.fail("❌ 表单提交错误")
             else:
-                logger.info("提交成功")
+                logger.info("✅ 提交成功")
 
     @allure.title("人事经理审核请假信息")
     def test_hr_approve(self, logged_hr_driver: WebDriver, logger: Logger, db_connect: DataBaseConnection):
@@ -79,7 +79,7 @@ class TestApprove:
                         name="审批结果错误",
                         attachment_type=allure.attachment_type.PNG
                     )
-                    pytest.fail(f"审批状态不正确,实际状态: {status}")
+                    pytest.fail(f"❌ 审批状态不正确,实际状态: {status}")
                 else:
                     logger.info("审批通过" if status == 2 else "审批拒绝")
             else:
