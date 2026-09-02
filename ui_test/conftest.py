@@ -11,7 +11,8 @@ from ui_test.pages import LoginPage
 STAFF_ACCOUNT = ("zhousha", "123456")
 HR_ACCOUNT = ("renshi", "123456")
 
-# chromedriver 候选位置：命中即直接使用，避免每次启动都联网解析版本
+# chromedriver 查找顺序：先看环境变量，再看几个常见安装位置
+# 目的：避免 Selenium Manager 每次启动都去外网查版本匹配，内网环境下能卡很久
 _DEFAULT_DRIVER_CANDIDATES = (
     "D:/Python314/chromedriver.exe",
     "C:/Windows/chromedriver.exe",
@@ -19,11 +20,7 @@ _DEFAULT_DRIVER_CANDIDATES = (
 
 
 def _resolve_chromedriver() -> str | None:
-    """解析本地 chromedriver 路径，找不到返回 None（交由 Selenium 自行处理）。
-
-    不指定路径时 Selenium Manager 每次启动都会请求 googlechromelabs 查询匹配版本，
-    在内网 / 代理环境下会长时间阻塞直至超时，是脚本「莫名很慢」的常见根因。
-    """
+    """找本地的 chromedriver，找不到就返回 None，让 Selenium 自己处理。"""
     env_path = os.getenv("GOUGUOA_CHROMEDRIVER")
     if env_path and Path(env_path).is_file():
         return env_path
@@ -35,22 +32,22 @@ def _resolve_chromedriver() -> str | None:
 
 @pytest.fixture(scope='session')
 def driver():
-    """启动 Chrome 浏览器，测试结束后自动退出。"""
+    """启动 Chrome，session 级复用，测试结束自动 quit。"""
     from selenium import webdriver
     from selenium.webdriver.chrome.options import Options
     from selenium.webdriver.chrome.service import Service
-    # 设置 Chrome 浏览器选项
+
     chrome_options = Options()
-    chrome_options.add_argument('--headless')  # 启用无头模式
+    chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-gpu')
-    # 注意：不要加 --blink-settings=imagesEnabled=false。
-    # 验证码是 <img>，禁用图片后元素截图为空白，OCR 必然失败。
+    # 别加 --blink-settings=imagesEnabled=false，验证码截图会变空白，OCR 直接废
     chrome_options.add_argument('--disable-background-timer-throttling')
-    # 等 DOMContentLoaded 就返回，不等图片/样式等子资源加载完。
-    # 页面元素一律由显式等待兜底，可省掉每页 1~2s 的资源加载等待。
-    # 若发现页面渲染不稳定，用 GOUGUOA_PAGE_LOAD_STRATEGY=normal 回退，无需改代码。
+
+    # 页面加载策略：默认 eager（DOM 就绪就返回，不傻等图片/css）
+    # 所有元素交互靠显式等待兜底，比 normal 快 1~2s/页
+    # 如果遇到页面渲染不稳定，设环境变量 GOUGUOA_PAGE_LOAD_STRATEGY=normal 回退
     chrome_options.page_load_strategy = os.getenv(
         "GOUGUOA_PAGE_LOAD_STRATEGY", "eager"
     )
@@ -60,7 +57,7 @@ def driver():
         print(f"使用本地 chromedriver: {driver_path}")
         browser = webdriver.Chrome(service=Service(driver_path), options=chrome_options)
     else:
-        print("未找到本地 chromedriver，交由 Selenium Manager 解析（可能较慢）")
+        print("没找到本地 chromedriver，交给 Selenium Manager 自己找（可能慢）")
         browser = webdriver.Chrome(options=chrome_options)
 
     browser.set_page_load_timeout(30)
