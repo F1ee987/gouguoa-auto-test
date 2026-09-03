@@ -34,10 +34,10 @@ class AppSettings(BaseSettings):
     )
 
     # 系统基础地址（不含结尾斜杠）
-    base_url: str = "http://192.168.198.133:81"
+    base_url: str = "http://192.168.198.128:81"
 
     # 数据库配置
-    db_host: str = "192.168.198.133"
+    db_host: str = "192.168.198.128"
     db_port: int = 3306
     db_user: str = "root"
     db_password: str = "root"

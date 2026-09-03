@@ -14,7 +14,7 @@ HR_ACCOUNT = ("renshi", "123456")
 # chromedriver 查找顺序：先看环境变量，再看几个常见安装位置
 # 目的：避免 Selenium Manager 每次启动都去外网查版本匹配，内网环境下能卡很久
 _DEFAULT_DRIVER_CANDIDATES = (
-    "D:/Python314/chromedriver.exe",
+    "D:/Python313/chromedriver.exe",
     "C:/Windows/chromedriver.exe",
 )
 
